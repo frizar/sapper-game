@@ -1,0 +1,40 @@
+.js-hidden {
+    display: none !important;
+}
+
+.olr {
+    outline: 1px solid red;
+}
+
+.olg {
+    outline: 1px solid green;
+}
+
+.olb {
+    outline: 1px solid blue;
+}
+
+[data-component="game"] {
+    border: 10px solid #ccc;
+    border-radius: 4px;
+    margin: 20px auto;
+}
+
+[data-component="game"] .game-field__cell {
+    border: 1px solid #ccc;
+    background-color: #eee;
+    float: left;
+    height: 30px;
+    width: 30px;
+    line-height: 30px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+[data-component="game"] .game-field__cell.open {
+    background-color: #fff;
+}
+
+[data-component="game"] .game-field__cell.mistake {
+    background-color: #ffbcba;
+}
