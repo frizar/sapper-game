@@ -1,6 +1,7 @@
 'use strict';
 
 const BaseComponent = require('./baseComponent');
+const compiledTemplate = require('../templates/timer.hbs');
 
 class Timer extends BaseComponent {
     constructor(options) {
@@ -11,7 +12,9 @@ class Timer extends BaseComponent {
     }
 
     render() {
-        this._el.innerHTML = this._seconds;
+        this._el.innerHTML = compiledTemplate({
+            seconds: this._seconds
+        });
     }
 
     start() {

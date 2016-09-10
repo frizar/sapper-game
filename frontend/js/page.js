@@ -1,7 +1,8 @@
 'use strict';
 
 const Game = require('./game');
-// const Timer = require('./timer');
+const Timer = require('./timer');
+const Alert = require('./alert');
 
 class Page {
     constructor(options) {
@@ -11,15 +12,32 @@ class Page {
             element: document.querySelector('[data-component="game"]')
         });
 
-        // this._timer = new Timer({
-        //     element: document.querySelector('[data-component="timer"]')
-        // });
+        this._timer = new Timer({
+            element: document.querySelector('[data-component="timer"]')
+        });
 
-        // this._game.on('gameStarted', this._onGameStart.bind(this));
+        this._alert = new Alert({
+            element: document.querySelector('[data-component="alert"]')
+        });
+
+        this._game.on('gameStarted', this._onGameStart.bind(this));
+        this._game.on('gameOver', this._onGameOver.bind(this));
     }
 
     _onGameStart(e) {
-        // this._timer.start();
+        this._timer.clean();
+        this._timer.start();
+    }
+
+    _onGameOver(e) {
+        let status = e.detail;
+        this._timer.stop();
+
+        let alertType = status ? 'success' : 'danger';
+        let alertText = status ? 'You won!' : 'You lose!';
+
+        this._alert.render(alertType, alertText);
+        this._alert.show();
     }
 }
 

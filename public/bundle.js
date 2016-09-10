@@ -63,7 +63,8 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var Game = __webpack_require__(2);
-	// const Timer = require('./timer');
+	var Timer = __webpack_require__(25);
+	var Alert = __webpack_require__(27);
 	
 	var Page = function () {
 	    function Page(options) {
@@ -75,17 +76,35 @@
 	            element: document.querySelector('[data-component="game"]')
 	        });
 	
-	        // this._timer = new Timer({
-	        //     element: document.querySelector('[data-component="timer"]')
-	        // });
+	        this._timer = new Timer({
+	            element: document.querySelector('[data-component="timer"]')
+	        });
 	
-	        // this._game.on('gameStarted', this._onGameStart.bind(this));
+	        this._alert = new Alert({
+	            element: document.querySelector('[data-component="alert"]')
+	        });
+	
+	        this._game.on('gameStarted', this._onGameStart.bind(this));
+	        this._game.on('gameOver', this._onGameOver.bind(this));
 	    }
 	
 	    _createClass(Page, [{
 	        key: '_onGameStart',
 	        value: function _onGameStart(e) {
-	            // this._timer.start();
+	            this._timer.clean();
+	            this._timer.start();
+	        }
+	    }, {
+	        key: '_onGameOver',
+	        value: function _onGameOver(e) {
+	            var status = e.detail;
+	            this._timer.stop();
+	
+	            var alertType = status ? 'success' : 'danger';
+	            var alertText = status ? 'You won!' : 'You lose!';
+	
+	            this._alert.render(alertType, alertText);
+	            this._alert.show();
 	        }
 	    }]);
 	
@@ -132,6 +151,12 @@
 	            cellSize: 30
 	        };
 	
+	        _this._gameTypes = {
+	            easy: '9x9, 10 bombs',
+	            normal: '16x16, 40 bombs',
+	            hard: '30x16, 99 bombs'
+	        };
+	
 	        _this._cellTypes = {
 	            empty: '',
 	            bomb: 'X'
@@ -146,6 +171,11 @@
 	        return _this;
 	    }
 	
+	    /**
+	     * Отображает поле для игры и устанавливает его размер
+	     */
+	
+	
 	    _createClass(Game, [{
 	        key: 'render',
 	        value: function render() {
@@ -155,6 +185,13 @@
 	
 	            this._updateGameFieldSize();
 	        }
+	
+	        /**
+	         * Обработчик первого клика, инициирует начало игры
+	         * @param e
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_onNewGame',
 	        value: function _onNewGame(e) {
@@ -163,25 +200,47 @@
 	                return;
 	            }
 	
+	            // удаляем этот обработчик
 	            this._el.removeEventListener('click', this._onNewGame);
 	
 	            var position = Game._getCellPosition(cell);
 	
+	            // устанавливаем мины после первого клика, чтобы нельзя было проиграть сразу же
 	            this._setBombs(position);
+	            // устанавливаем в массив ячеек числа (сколько вокруг каждой ячейки мин)
 	            this._setNumbers();
-	
-	            /* #remove code below ! */
-	            /*this.render(); // render bombs for test (cell was removed from DOM after this!)
-	            this._openCell(
-	                this._el.querySelector(`[data-position="${[position[0]]}_${[position[1]]}"]`)
-	            );
-	            /* /remove */
-	
-	            this._openCell(cell); // production code, uncomment this!
+	            // открываем первую кликнутую ячейку
+	            this._openCell(cell);
 	
 	            this.on('click', this._onClick.bind(this), '.game-field__cell');
+	            // сообщаем странице, что игра началась
 	            this.trigger('gameStarted');
 	        }
+	
+	        /**
+	         * Метод завершает игру
+	         * @param status - false - проигрыш, true - выигрыш
+	         * @private
+	         */
+	
+	    }, {
+	        key: '_gameOver',
+	        value: function _gameOver(status) {
+	            this._gameIsOver = true;
+	
+	            console.info('Game Over. You ' + (status ? 'won' : 'lose') + '!');
+	
+	            // сообщаем странице, что игра завершилась
+	            this.trigger('gameOver', status);
+	        }
+	
+	        /**
+	         * Обработчик клика по ячейкам
+	         * @param e
+	         * @param cell
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_onClick',
 	        value: function _onClick(e, cell) {
@@ -189,12 +248,23 @@
 	                return;
 	            }
 	
+	            // при клике левой кнопкой
 	            if (e.which === 1) {
+	                // открываем ячейку
 	                this._openCell(cell);
+	                // а правой
 	            } else if (e.which === 2) {
+	                // открываем смежные
 	                this._showOuterCells(cell);
 	            }
 	        }
+	
+	        /**
+	         * Открывает ячейки вокруг заданной (клик средней кнопкой) по правилам игры
+	         * @param cell
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_showOuterCells',
 	        value: function _showOuterCells(cell) {
@@ -202,11 +272,21 @@
 	            var cellValue = this._cells[position[0]][position[1]];
 	            if (cell.classList.contains('open') && !cell.classList.contains('bomb') && typeof cellValue === 'number') {
 	                var markedBombs = this._calcOuterMarkers(position);
+	                // открываем в том случае, если кол-во отметок вокруг ячейки соответствует ее числу
+	                // здесь игрок может ошибиться и проиграть
 	                if (+cell.textContent === markedBombs) {
 	                    this._openOuterCells(position);
 	                }
 	            }
 	        }
+	
+	        /**
+	         * Считает кол-во меток вокруг заданной ячейки
+	         * @param position
+	         * @returns {number}
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_calcOuterMarkers',
 	        value: function _calcOuterMarkers(position) {
@@ -220,6 +300,15 @@
 	
 	            return num;
 	        }
+	
+	        /**
+	         * Проверяет окружающие ячейки на наличие маркера построчно (3 сверху, 3 снизу и 3 в той же строке)
+	         * @param rowIndex
+	         * @param cellIndex
+	         * @returns {number}
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_calcMarkedCells',
 	        value: function _calcMarkedCells(rowIndex, cellIndex) {
@@ -235,6 +324,15 @@
 	
 	            return num;
 	        }
+	
+	        /**
+	         * Метод говорит есть ли на ячейке метка
+	         * @param rowIndex
+	         * @param cellIndex
+	         * @returns {boolean}
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_markerInCell',
 	        value: function _markerInCell(rowIndex, cellIndex) {
@@ -242,6 +340,14 @@
 	
 	            return cellElement ? cellElement.classList.contains('bomb') : false;
 	        }
+	
+	        /**
+	         * Ставит/снимает на/с ячейку метку мины по правому клику
+	         * @param e
+	         * @param cell
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_onRightClick',
 	        value: function _onRightClick(e, cell) {
@@ -259,6 +365,14 @@
 	                }
 	            }
 	        }
+	
+	        /**
+	         * Метод открывает ячейку
+	         * Если она оказывается пустой, то рекурсивно открывает смежные ячейки без мин
+	         * @param cell
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_openCell',
 	        value: function _openCell(cell) {
@@ -270,6 +384,7 @@
 	
 	            var cellValue = this._cells[position[0]][position[1]];
 	
+	            // если была открыта мина, то завершаем игру с проигрышем
 	            if (cellValue === this._cellTypes.bomb) {
 	                this._gameOver(false);
 	
@@ -293,10 +408,19 @@
 	                this._openOuterCells(position);
 	            }
 	        }
+	
+	        /**
+	         * Проверка условия выигрыша по правилам игры
+	         * Игра считается выиграной, если открыты все ячейки, свободные от мин
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_checkVictoryCondition',
 	        value: function _checkVictoryCondition() {
+	            // количество открытых ячеек
 	            var openedCells = this._el.querySelectorAll('.game-field__cell.open').length;
+	            // количество ячеек, свободных от мин
 	            var cleanCells = this._field.width * this._field.height - this._field.bombsCount;
 	            if (openedCells === cleanCells) {
 	                this._gameOver(true);
@@ -304,6 +428,12 @@
 	                this._showAllBombs();
 	            }
 	        }
+	
+	        /**
+	         * Метод открывает все мины на карте
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_showAllBombs',
 	        value: function _showAllBombs() {
@@ -316,14 +446,13 @@
 	                }
 	            }
 	        }
-	    }, {
-	        key: '_gameOver',
-	        value: function _gameOver(status) {
-	            this._gameIsOver = true;
-	            var result = 'Game Over. You ' + (status ? 'won' : 'lose') + '!';
-	            console.info(result);
-	            alert(result);
-	        }
+	
+	        /**
+	         * Метод делает проверку окружающих ячеек и открывает их, если это возможно и соответствует правилам игры
+	         * @param position
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_openOuterCells',
 	        value: function _openOuterCells(position) {
@@ -352,6 +481,14 @@
 	                this._openCell(cellElement);
 	            }
 	        }
+	
+	        /**
+	         * Метод считает кол-во мин в массиве вокруг указанной ячейки
+	         * @param position
+	         * @returns {number}
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_calcOuterBombs',
 	        value: function _calcOuterBombs(position) {
@@ -365,6 +502,16 @@
 	
 	            return num;
 	        }
+	
+	        /**
+	         * Метод возвращает кол-во мин в заданной строке относительно указанных "координат" кликнутой ячейки
+	         * (3 ячейки сверху, 3 в той же строке, включая саму ячейку и 3 снизу)
+	         * @param rowIndex
+	         * @param cellIndex
+	         * @returns {number}
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_calcBombsInOuterCells',
 	        value: function _calcBombsInOuterCells(rowIndex, cellIndex) {
@@ -380,6 +527,15 @@
 	
 	            return num;
 	        }
+	
+	        /**
+	         * Метод возвращает значение для ячейки в массиве (мина или нет)
+	         * @param rowIndex
+	         * @param cellIndex
+	         * @returns {boolean}
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_bombInCell',
 	        value: function _bombInCell(rowIndex, cellIndex) {
@@ -399,13 +555,16 @@
 	            this._field.bombsPlanted = 0;
 	
 	            while (this._field.bombsPlanted < this._field.bombsCount) {
+	                // выбираем случайную ячейку
 	                var randomRow = Numbers.getRandomInteger(0, this._field.height - 1);
 	                var randomCell = Numbers.getRandomInteger(0, this._field.width - 1);
 	
+	                // она не должна быть той, с которой началась игра
 	                if (excludedCell[0] === randomRow && excludedCell[1] === randomCell) {
 	                    continue;
 	                }
 	
+	                // ставим отметку в массиве, что это мина
 	                if (this._cells[randomRow][randomCell] === this._cellTypes.empty) {
 	                    this._cells[randomRow][randomCell] = this._cellTypes.bomb;
 	                    this._field.bombsPlanted++;
@@ -460,19 +619,35 @@
 	            this._cells = [];
 	
 	            for (var i = 0; i < this._field.height; i++) {
-	                this._cells[i] = [];
+	                this._cells[i] = []; // создаем двумерный массив
 	
 	                for (var j = 0; j < this._field.width; j++) {
+	                    // и заполняем его пустыми строками
 	                    this._cells[i][j] = this._cellTypes.empty;
 	                }
 	            }
 	        }
+	
+	        /**
+	         * Метод принимает элемент ячейки и возвращает ее "координаты" из data-атрибута
+	         * @param cell
+	         * @returns {*[]}
+	         * @private
+	         */
+	
 	    }], [{
 	        key: '_getCellPosition',
 	        value: function _getCellPosition(cell) {
 	            var cellPos = cell.dataset.position.split('_');
 	            return [+cellPos[0], +cellPos[1]];
 	        }
+	
+	        /**
+	         * Добавляет ячейке метку с миной
+	         * @param cell
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_addBombToCell',
 	        value: function _addBombToCell(cell) {
@@ -480,6 +655,13 @@
 	            cell.classList.remove('text-danger');
 	            cell.innerHTML = '<i class="fa fa-bomb" aria-hidden="true"></i>';
 	        }
+	
+	        /**
+	         * Снимает с ячейки метку с миной
+	         * @param cell
+	         * @private
+	         */
+	
 	    }, {
 	        key: '_removeBombFromCell',
 	        value: function _removeBombFromCell(cell) {
@@ -514,12 +696,12 @@
 	    _createClass(BaseComponent, [{
 	        key: 'hide',
 	        value: function hide() {
-	            this._el.classList.add('js-hidden');
+	            this._el.classList.add('hidden');
 	        }
 	    }, {
 	        key: 'show',
 	        value: function show() {
-	            this._el.classList.remove('js-hidden');
+	            this._el.classList.remove('hidden');
 	        }
 	    }, {
 	        key: 'getElement',
@@ -1790,6 +1972,144 @@
 	//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uL2xpYi9oYW5kbGViYXJzL25vLWNvbmZsaWN0LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7O3FCQUNlLFVBQVMsVUFBVSxFQUFFOztBQUVsQyxNQUFJLElBQUksR0FBRyxPQUFPLE1BQU0sS0FBSyxXQUFXLEdBQUcsTUFBTSxHQUFHLE1BQU07TUFDdEQsV0FBVyxHQUFHLElBQUksQ0FBQyxVQUFVLENBQUM7O0FBRWxDLFlBQVUsQ0FBQyxVQUFVLEdBQUcsWUFBVztBQUNqQyxRQUFJLElBQUksQ0FBQyxVQUFVLEtBQUssVUFBVSxFQUFFO0FBQ2xDLFVBQUksQ0FBQyxVQUFVLEdBQUcsV0FBVyxDQUFDO0tBQy9CO0FBQ0QsV0FBTyxVQUFVLENBQUM7R0FDbkIsQ0FBQztDQUNIIiwiZmlsZSI6Im5vLWNvbmZsaWN0LmpzIiwic291cmNlc0NvbnRlbnQiOlsiLyogZ2xvYmFsIHdpbmRvdyAqL1xuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24oSGFuZGxlYmFycykge1xuICAvKiBpc3RhbmJ1bCBpZ25vcmUgbmV4dCAqL1xuICBsZXQgcm9vdCA9IHR5cGVvZiBnbG9iYWwgIT09ICd1bmRlZmluZWQnID8gZ2xvYmFsIDogd2luZG93LFxuICAgICAgJEhhbmRsZWJhcnMgPSByb290LkhhbmRsZWJhcnM7XG4gIC8qIGlzdGFuYnVsIGlnbm9yZSBuZXh0ICovXG4gIEhhbmRsZWJhcnMubm9Db25mbGljdCA9IGZ1bmN0aW9uKCkge1xuICAgIGlmIChyb290LkhhbmRsZWJhcnMgPT09IEhhbmRsZWJhcnMpIHtcbiAgICAgIHJvb3QuSGFuZGxlYmFycyA9ICRIYW5kbGViYXJzO1xuICAgIH1cbiAgICByZXR1cm4gSGFuZGxlYmFycztcbiAgfTtcbn1cbiJdfQ==
 	
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var BaseComponent = __webpack_require__(3);
+	var compiledTemplate = __webpack_require__(26);
+	
+	var Timer = function (_BaseComponent) {
+	    _inherits(Timer, _BaseComponent);
+	
+	    function Timer(options) {
+	        _classCallCheck(this, Timer);
+	
+	        var _this = _possibleConstructorReturn(this, (Timer.__proto__ || Object.getPrototypeOf(Timer)).call(this, options.element));
+	
+	        _this._seconds = 0;
+	        _this.render();
+	        return _this;
+	    }
+	
+	    _createClass(Timer, [{
+	        key: 'render',
+	        value: function render() {
+	            this._el.innerHTML = compiledTemplate({
+	                seconds: this._seconds
+	            });
+	        }
+	    }, {
+	        key: 'start',
+	        value: function start() {
+	            var _this2 = this;
+	
+	            this._timer = setInterval(function () {
+	                _this2._seconds++;
+	                _this2.render();
+	            }, 1000);
+	        }
+	    }, {
+	        key: 'stop',
+	        value: function stop() {
+	            clearInterval(this._timer);
+	        }
+	    }, {
+	        key: 'clean',
+	        value: function clean() {
+	            this._seconds = 0;
+	            this.render();
+	        }
+	    }]);
+	
+	    return Timer;
+	}(BaseComponent);
+	
+	module.exports = Timer;
+
+/***/ },
+/* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Handlebars = __webpack_require__(6);
+	function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj); }
+	module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
+	    var helper;
+	
+	  return "<div>Time: <span class=\"badge\">"
+	    + container.escapeExpression(((helper = (helper = helpers.seconds || (depth0 != null ? depth0.seconds : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : {},{"name":"seconds","hash":{},"data":data}) : helper)))
+	    + "</span></div>\r\n";
+	},"useData":true});
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var BaseComponent = __webpack_require__(3);
+	var compiledTemplate = __webpack_require__(28);
+	
+	var Alert = function (_BaseComponent) {
+	    _inherits(Alert, _BaseComponent);
+	
+	    function Alert(options) {
+	        _classCallCheck(this, Alert);
+	
+	        return _possibleConstructorReturn(this, (Alert.__proto__ || Object.getPrototypeOf(Alert)).call(this, options.element));
+	    }
+	
+	    _createClass(Alert, [{
+	        key: 'render',
+	        value: function render(type, text) {
+	            this._el.innerHTML = compiledTemplate({
+	                type: type,
+	                text: text
+	            });
+	
+	            this.show();
+	        }
+	    }]);
+	
+	    return Alert;
+	}(BaseComponent);
+	
+	module.exports = Alert;
+
+/***/ },
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Handlebars = __webpack_require__(6);
+	function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj); }
+	module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
+	    var helper, alias1=depth0 != null ? depth0 : {}, alias2=helpers.helperMissing, alias3="function", alias4=container.escapeExpression;
+	
+	  return "<div class=\"alert alert-"
+	    + alias4(((helper = (helper = helpers.type || (depth0 != null ? depth0.type : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"type","hash":{},"data":data}) : helper)))
+	    + "\" role=\"alert\">"
+	    + alias4(((helper = (helper = helpers.text || (depth0 != null ? depth0.text : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"text","hash":{},"data":data}) : helper)))
+	    + "</div>\r\n";
+	},"useData":true});
 
 /***/ }
 /******/ ]);

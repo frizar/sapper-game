@@ -20,6 +20,12 @@ class Game extends BaseComponent {
             cellSize: 30
         };
 
+        this._gameTypes = {
+            easy: '9x9, 10 bombs',
+            normal: '16x16, 40 bombs',
+            hard: '30x16, 99 bombs',
+        };
+
         this._cellTypes = {
             empty: '',
             bomb: 'X'
@@ -33,6 +39,9 @@ class Game extends BaseComponent {
         this.on('contextmenu', this._onRightClick.bind(this), '.game-field__cell');
     }
 
+    /**
+     * Отображает поле для игры и устанавливает его размер
+     */
     render() {
         this._el.innerHTML = gameFieldTemplate({
             cells: this._cells
@@ -41,60 +50,94 @@ class Game extends BaseComponent {
         this._updateGameFieldSize();
     }
 
-    static _getCellPosition(cell) {
-        let cellPos = cell.dataset.position.split('_');
-        return [+cellPos[0], +cellPos[1]];
-    }
-
+    /**
+     * Обработчик первого клика, инициирует начало игры
+     * @param e
+     * @private
+     */
     _onNewGame(e) {
         let cell = e.target.closest('.game-field__cell');
         if (!cell || !this._el.contains(cell)) {
             return;
         }
 
+        // удаляем этот обработчик
         this._el.removeEventListener('click', this._onNewGame);
 
         let position = Game._getCellPosition(cell);
 
+        // устанавливаем мины после первого клика, чтобы нельзя было проиграть сразу же
         this._setBombs(position);
+        // устанавливаем в массив ячеек числа (сколько вокруг каждой ячейки мин)
         this._setNumbers();
-
-        /* #remove code below ! */
-        /*this.render(); // render bombs for test (cell was removed from DOM after this!)
-        this._openCell(
-            this._el.querySelector(`[data-position="${[position[0]]}_${[position[1]]}"]`)
-        );
-        /* /remove */
-
-        this._openCell(cell); // production code, uncomment this!
+        // открываем первую кликнутую ячейку
+        this._openCell(cell);
 
         this.on('click', this._onClick.bind(this), '.game-field__cell');
+        // сообщаем странице, что игра началась
         this.trigger('gameStarted');
     }
 
+    /**
+     * Метод завершает игру
+     * @param status - false - проигрыш, true - выигрыш
+     * @private
+     */
+    _gameOver(status) {
+        this._gameIsOver = true;
+
+        console.info(`Game Over. You ${(status ? 'won' : 'lose')}!`);
+
+        // сообщаем странице, что игра завершилась
+        this.trigger('gameOver', status);
+    }
+
+    /**
+     * Обработчик клика по ячейкам
+     * @param e
+     * @param cell
+     * @private
+     */
     _onClick(e, cell) {
         if (this._gameIsOver) {
             return;
         }
 
+        // при клике левой кнопкой
         if (e.which === 1) {
+            // открываем ячейку
             this._openCell(cell);
+            // а правой
         } else if (e.which === 2) {
+            // открываем смежные
             this._showOuterCells(cell);
         }
     }
 
+    /**
+     * Открывает ячейки вокруг заданной (клик средней кнопкой) по правилам игры
+     * @param cell
+     * @private
+     */
     _showOuterCells(cell) {
         let position = Game._getCellPosition(cell);
         let cellValue = this._cells[position[0]][position[1]];
         if (cell.classList.contains('open') && !cell.classList.contains('bomb') && typeof cellValue === 'number') {
             let markedBombs = this._calcOuterMarkers(position);
+            // открываем в том случае, если кол-во отметок вокруг ячейки соответствует ее числу
+            // здесь игрок может ошибиться и проиграть
             if (+cell.textContent === markedBombs) {
                 this._openOuterCells(position);
             }
         }
     }
 
+    /**
+     * Считает кол-во меток вокруг заданной ячейки
+     * @param position
+     * @returns {number}
+     * @private
+     */
     _calcOuterMarkers(position) {
         let num = 0;
 
@@ -107,6 +150,13 @@ class Game extends BaseComponent {
         return num;
     }
 
+    /**
+     * Проверяет окружающие ячейки на наличие маркера построчно (3 сверху, 3 снизу и 3 в той же строке)
+     * @param rowIndex
+     * @param cellIndex
+     * @returns {number}
+     * @private
+     */
     _calcMarkedCells(rowIndex, cellIndex) {
         let num = 0;
 
@@ -121,6 +171,13 @@ class Game extends BaseComponent {
         return num;
     }
 
+    /**
+     * Метод говорит есть ли на ячейке метка
+     * @param rowIndex
+     * @param cellIndex
+     * @returns {boolean}
+     * @private
+     */
     _markerInCell(rowIndex, cellIndex) {
         let cellElement = this._el.querySelector(`[data-position="${rowIndex}_${cellIndex}"]`);
 
@@ -129,6 +186,12 @@ class Game extends BaseComponent {
             false;
     }
 
+    /**
+     * Ставит/снимает на/с ячейку метку мины по правому клику
+     * @param e
+     * @param cell
+     * @private
+     */
     _onRightClick(e, cell) {
         if (this._gameIsOver) {
             return;
@@ -145,18 +208,12 @@ class Game extends BaseComponent {
         }
     }
 
-    static _addBombToCell(cell) {
-        cell.classList.add('bomb');
-        cell.classList.remove('text-danger');
-        cell.innerHTML = '<i class="fa fa-bomb" aria-hidden="true"></i>';
-    }
-
-    static _removeBombFromCell(cell) {
-        cell.classList.remove('bomb');
-        cell.classList.add('text-danger');
-        cell.innerHTML = '';
-    }
-
+    /**
+     * Метод открывает ячейку
+     * Если она оказывается пустой, то рекурсивно открывает смежные ячейки без мин
+     * @param cell
+     * @private
+     */
     _openCell(cell) {
         if (cell.classList.contains('bomb')) {
             return;
@@ -166,6 +223,7 @@ class Game extends BaseComponent {
 
         let cellValue = this._cells[position[0]][position[1]];
 
+        // если была открыта мина, то завершаем игру с проигрышем
         if (cellValue === this._cellTypes.bomb) {
             this._gameOver(false);
 
@@ -190,8 +248,15 @@ class Game extends BaseComponent {
         }
     }
 
+    /**
+     * Проверка условия выигрыша по правилам игры
+     * Игра считается выиграной, если открыты все ячейки, свободные от мин
+     * @private
+     */
     _checkVictoryCondition() {
+        // количество открытых ячеек
         let openedCells = this._el.querySelectorAll('.game-field__cell.open').length;
+        // количество ячеек, свободных от мин
         let cleanCells = this._field.width * this._field.height - this._field.bombsCount;
         if (openedCells === cleanCells) {
             this._gameOver(true);
@@ -200,6 +265,10 @@ class Game extends BaseComponent {
         }
     }
 
+    /**
+     * Метод открывает все мины на карте
+     * @private
+     */
     _showAllBombs() {
         for (let i = 0; i < this._field.height; i++) {
             for (let j = 0; j < this._field.width; j++) {
@@ -211,13 +280,11 @@ class Game extends BaseComponent {
         }
     }
 
-    _gameOver(status) {
-        this._gameIsOver = true;
-        let result = `Game Over. You ${(status ? 'won' : 'lose')}!`;
-        console.info(result);
-        alert(result);
-    }
-
+    /**
+     * Метод делает проверку окружающих ячеек и открывает их, если это возможно и соответствует правилам игры
+     * @param position
+     * @private
+     */
     _openOuterCells(position) {
         this._checkOuterCells(position[0] - 1, position[1]);
 
@@ -243,6 +310,12 @@ class Game extends BaseComponent {
         }
     }
 
+    /**
+     * Метод считает кол-во мин в массиве вокруг указанной ячейки
+     * @param position
+     * @returns {number}
+     * @private
+     */
     _calcOuterBombs(position) {
         let num = 0;
 
@@ -255,6 +328,14 @@ class Game extends BaseComponent {
         return num;
     }
 
+    /**
+     * Метод возвращает кол-во мин в заданной строке относительно указанных "координат" кликнутой ячейки
+     * (3 ячейки сверху, 3 в той же строке, включая саму ячейку и 3 снизу)
+     * @param rowIndex
+     * @param cellIndex
+     * @returns {number}
+     * @private
+     */
     _calcBombsInOuterCells(rowIndex, cellIndex) {
         let num = 0;
 
@@ -269,6 +350,13 @@ class Game extends BaseComponent {
         return num;
     }
 
+    /**
+     * Метод возвращает значение для ячейки в массиве (мина или нет)
+     * @param rowIndex
+     * @param cellIndex
+     * @returns {boolean}
+     * @private
+     */
     _bombInCell(rowIndex, cellIndex) {
         return this._cells[rowIndex][cellIndex] === this._cellTypes.bomb;
     }
@@ -283,13 +371,16 @@ class Game extends BaseComponent {
         this._field.bombsPlanted = 0;
 
         while (this._field.bombsPlanted < this._field.bombsCount) {
+            // выбираем случайную ячейку
             let randomRow = Numbers.getRandomInteger(0, this._field.height - 1);
             let randomCell = Numbers.getRandomInteger(0, this._field.width - 1);
 
+            // она не должна быть той, с которой началась игра
             if (excludedCell[0] === randomRow && excludedCell[1] === randomCell) {
                 continue;
             }
 
+            // ставим отметку в массиве, что это мина
             if (this._cells[randomRow][randomCell] === this._cellTypes.empty) {
                 this._cells[randomRow][randomCell] = this._cellTypes.bomb;
                 this._field.bombsPlanted++;
@@ -335,12 +426,46 @@ class Game extends BaseComponent {
         this._cells = [];
 
         for (let i = 0; i < this._field.height; i++) {
-            this._cells[i] = [];
+            this._cells[i] = []; // создаем двумерный массив
 
             for (let j = 0; j < this._field.width; j++) {
+                // и заполняем его пустыми строками
                 this._cells[i][j] = this._cellTypes.empty;
             }
         }
+    }
+
+    /**
+     * Метод принимает элемент ячейки и возвращает ее "координаты" из data-атрибута
+     * @param cell
+     * @returns {*[]}
+     * @private
+     */
+    static _getCellPosition(cell) {
+        let cellPos = cell.dataset.position.split('_');
+        return [+cellPos[0], +cellPos[1]];
+    }
+
+    /**
+     * Добавляет ячейке метку с миной
+     * @param cell
+     * @private
+     */
+    static _addBombToCell(cell) {
+        cell.classList.add('bomb');
+        cell.classList.remove('text-danger');
+        cell.innerHTML = '<i class="fa fa-bomb" aria-hidden="true"></i>';
+    }
+
+    /**
+     * Снимает с ячейки метку с миной
+     * @param cell
+     * @private
+     */
+    static _removeBombFromCell(cell) {
+        cell.classList.remove('bomb');
+        cell.classList.add('text-danger');
+        cell.innerHTML = '';
     }
 }
 

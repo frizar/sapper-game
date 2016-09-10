@@ -6,11 +6,11 @@ class BaseComponent {
     }
 
     hide() {
-        this._el.classList.add('js-hidden');
+        this._el.classList.add('hidden');
     }
 
     show() {
-        this._el.classList.remove('js-hidden');
+        this._el.classList.remove('hidden');
     }
 
     getElement() {
