@@ -10,33 +10,28 @@ class Game extends BaseComponent {
 
         this._gameIsOver = false;
 
-        this._cells = [];
-
-        this._field = {
-            width: 9,
-            height: 9,
-            bombsCount: 10,
-            bombsPlanted: 0,
-            cellSize: 30
-        };
+        this._gameType = 'easy';
 
         this._gameTypes = {
-            easy: '9x9, 10 bombs',
-            normal: '16x16, 40 bombs',
-            hard: '30x16, 99 bombs',
+            easy: [9, 9, 10],
+            normal: [16, 16, 40],
+            hard: [30, 16, 99],
         };
+
+        this._cells = [];
 
         this._cellTypes = {
             empty: '',
             bomb: 'X'
         };
 
+        this._initField();
+        this._resetCells();
+        this.render();
+
         this._onNewGame = this._onNewGame.bind(this);
         this._el.addEventListener('click', this._onNewGame);
         this.on('contextmenu', this._onRightClick.bind(this), '.game-field__cell');
-
-        this._resetCells();
-        this.render();
     }
 
     /**
@@ -53,10 +48,25 @@ class Game extends BaseComponent {
     restartGame() {
         this._gameIsOver = true;
 
-        this._el.addEventListener('click', this._onNewGame);
-
+        this._initField();
         this._resetCells();
         this.render();
+
+        this._el.addEventListener('click', this._onNewGame);
+    }
+
+    changeDifficulty(difficulty) {
+        this._gameType = difficulty;
+    }
+
+    _initField() {
+        this._field = {
+            width: this._gameTypes[this._gameType][0],
+            height: this._gameTypes[this._gameType][1],
+            bombsCount: this._gameTypes[this._gameType][2],
+            bombsPlanted: 0,
+            cellSize: 30
+        };
     }
 
     /**
@@ -475,6 +485,14 @@ class Game extends BaseComponent {
         cell.classList.remove('bomb');
         cell.classList.add('text-danger');
         cell.innerHTML = '';
+    }
+
+    static getGameTypes() {
+        return {
+            'easy': 'Easy: 9x9, 10 mines',
+            'normal': 'Normal: 16x16, 40 mines',
+            'hard': 'Hard: 30x16, 99 mines'
+        };
     }
 }
 

@@ -5,6 +5,7 @@ const Timer = require('./timer');
 const Alert = require('./alert');
 const BestResult = require('./bestResult');
 const NewGame = require('./newGame');
+const Config = require('./config');
 
 class Page {
     constructor(options) {
@@ -30,9 +31,17 @@ class Page {
             element: document.querySelector('[data-component="new-game"]')
         });
 
+        this._config = new Config({
+            element: document.querySelector('[data-component="config"]')
+        });
+
+        this._config.setList(Game.getGameTypes());
+        this._config.render();
+
         this._game.on('gameStarted', this._onGameStart.bind(this));
         this._game.on('gameOver', this._onGameOver.bind(this));
         this._newGame.on('newGame', this._onNewGame.bind(this));
+        this._config.on('configChanged', this._configChanged.bind(this));
     }
 
     _onGameStart(e) {
@@ -62,6 +71,12 @@ class Page {
         this._alert.hide();
         this._timer.clean();
         this._game.restartGame();
+    }
+
+    _configChanged(e) {
+        let difficulty = e.detail;
+
+        this._game.changeDifficulty(difficulty);
     }
 }
 
