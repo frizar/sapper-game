@@ -493,9 +493,9 @@ class Game extends BaseComponent {
 
     static getGameTypes() {
         return {
-            'easy': 'Easy: 9x9, 10 mines',
-            'normal': 'Normal: 16x16, 40 mines',
-            'hard': 'Hard: 30x16, 99 mines'
+            'easy': 'Easy',
+            'normal': 'Normal',
+            'hard': 'Hard'
         };
     }
 }
