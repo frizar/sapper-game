@@ -31,12 +31,12 @@ class Game extends BaseComponent {
             bomb: 'X'
         };
 
-        this._resetCells();
-        this.render();
-
         this._onNewGame = this._onNewGame.bind(this);
         this._el.addEventListener('click', this._onNewGame);
         this.on('contextmenu', this._onRightClick.bind(this), '.game-field__cell');
+
+        this._resetCells();
+        this.render();
     }
 
     /**
@@ -50,6 +50,15 @@ class Game extends BaseComponent {
         this._updateGameFieldSize();
     }
 
+    restartGame() {
+        this._gameIsOver = true;
+
+        this._el.addEventListener('click', this._onNewGame);
+
+        this._resetCells();
+        this.render();
+    }
+
     /**
      * Обработчик первого клика, инициирует начало игры
      * @param e
@@ -60,6 +69,8 @@ class Game extends BaseComponent {
         if (!cell || !this._el.contains(cell)) {
             return;
         }
+
+        this._gameIsOver = false;
 
         // удаляем этот обработчик
         this._el.removeEventListener('click', this._onNewGame);
@@ -85,8 +96,6 @@ class Game extends BaseComponent {
      */
     _gameOver(status) {
         this._gameIsOver = true;
-
-        console.info(`Game Over. You ${(status ? 'won' : 'lose')}!`);
 
         // сообщаем странице, что игра завершилась
         this.trigger('gameOver', status);

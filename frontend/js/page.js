@@ -4,6 +4,7 @@ const Game = require('./game');
 const Timer = require('./timer');
 const Alert = require('./alert');
 const BestResult = require('./bestResult');
+const NewGame = require('./newGame');
 
 class Page {
     constructor(options) {
@@ -25,8 +26,13 @@ class Page {
             element: document.querySelector('[data-component="best-result"]')
         });
 
+        this._newGame = new NewGame({
+            element: document.querySelector('[data-component="new-game"]')
+        });
+
         this._game.on('gameStarted', this._onGameStart.bind(this));
         this._game.on('gameOver', this._onGameOver.bind(this));
+        this._newGame.on('newGame', this._onNewGame.bind(this));
     }
 
     _onGameStart(e) {
@@ -46,10 +52,16 @@ class Page {
 
         if (status) {
             let seconds = this._timer.getSeconds();
-            console.log(seconds);
+
             this._bestResult.updateBestResult(seconds);
             this._bestResult.render();
         }
+    }
+
+    _onNewGame(e) {
+        this._alert.hide();
+        this._timer.clean();
+        this._game.restartGame();
     }
 }
 

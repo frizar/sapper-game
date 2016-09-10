@@ -29,6 +29,7 @@ class Timer extends BaseComponent {
     }
 
     clean() {
+        this.stop();
         this._seconds = 0;
         this.render();
     }

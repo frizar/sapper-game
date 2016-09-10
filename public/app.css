@@ -15,21 +15,21 @@
 }
 
 [data-component="timer"] {
-    border: 1px solid #ccc;
+    border: 1px solid #a4abf6;
     border-radius: 4px;
     margin: 10px auto;
     padding: 3px;
 }
 
 [data-component="best-result"] {
-    border: 1px solid #ccc;
+    border: 1px solid #a4abf6;
     border-radius: 4px;
     margin: 10px auto;
     padding: 3px;
 }
 
 [data-component="game"] {
-    border: 10px solid #ccc;
+    border: 10px solid #a4abf6;
     border-radius: 4px;
     margin: 0 auto 10px;
 }
@@ -38,9 +38,13 @@
     margin: 0 auto 10px;
 }
 
+[data-component="new-game"] {
+    margin: 0 auto 10px;
+}
+
 [data-component="game"] .game-field__cell {
-    border: 1px solid #ccc;
-    background-color: #eee;
+    border: 1px solid #a4abf6;
+    background-color: #dfdff7;
     float: left;
     height: 30px;
     width: 30px;
