@@ -3,6 +3,7 @@
 const Game = require('./game');
 const Timer = require('./timer');
 const Alert = require('./alert');
+const BestResult = require('./bestResult');
 
 class Page {
     constructor(options) {
@@ -18,6 +19,10 @@ class Page {
 
         this._alert = new Alert({
             element: document.querySelector('[data-component="alert"]')
+        });
+
+        this._bestResult = new BestResult({
+            element: document.querySelector('[data-component="best-result"]')
         });
 
         this._game.on('gameStarted', this._onGameStart.bind(this));
@@ -38,6 +43,13 @@ class Page {
 
         this._alert.render(alertType, alertText);
         this._alert.show();
+
+        if (status) {
+            let seconds = this._timer.getSeconds();
+            console.log(seconds);
+            this._bestResult.updateBestResult(seconds);
+            this._bestResult.render();
+        }
     }
 }
 

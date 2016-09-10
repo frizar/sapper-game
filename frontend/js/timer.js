@@ -32,6 +32,10 @@ class Timer extends BaseComponent {
         this._seconds = 0;
         this.render();
     }
+
+    getSeconds() {
+        return this._seconds;
+    }
 }
 
 module.exports = Timer;

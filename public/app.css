@@ -17,18 +17,25 @@
 [data-component="timer"] {
     border: 1px solid #ccc;
     border-radius: 4px;
-    margin: 20px auto;
+    margin: 10px auto;
+    padding: 3px;
+}
+
+[data-component="best-result"] {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin: 10px auto;
     padding: 3px;
 }
 
 [data-component="game"] {
     border: 10px solid #ccc;
     border-radius: 4px;
-    margin: 0 auto 20px;
+    margin: 0 auto 10px;
 }
 
 [data-component="alert"] {
-    margin: 0 auto 20px;
+    margin: 0 auto 10px;
 }
 
 [data-component="game"] .game-field__cell {

@@ -65,6 +65,7 @@
 	var Game = __webpack_require__(2);
 	var Timer = __webpack_require__(25);
 	var Alert = __webpack_require__(27);
+	var BestResult = __webpack_require__(29);
 	
 	var Page = function () {
 	    function Page(options) {
@@ -82,6 +83,10 @@
 	
 	        this._alert = new Alert({
 	            element: document.querySelector('[data-component="alert"]')
+	        });
+	
+	        this._bestResult = new BestResult({
+	            element: document.querySelector('[data-component="best-result"]')
 	        });
 	
 	        this._game.on('gameStarted', this._onGameStart.bind(this));
@@ -105,6 +110,13 @@
 	
 	            this._alert.render(alertType, alertText);
 	            this._alert.show();
+	
+	            if (status) {
+	                var seconds = this._timer.getSeconds();
+	                console.log(seconds);
+	                this._bestResult.updateBestResult(seconds);
+	                this._bestResult.render();
+	            }
 	        }
 	    }]);
 	
@@ -2031,6 +2043,11 @@
 	            this._seconds = 0;
 	            this.render();
 	        }
+	    }, {
+	        key: 'getSeconds',
+	        value: function getSeconds() {
+	            return this._seconds;
+	        }
 	    }]);
 	
 	    return Timer;
@@ -2109,6 +2126,74 @@
 	    + "\" role=\"alert\">"
 	    + alias4(((helper = (helper = helpers.text || (depth0 != null ? depth0.text : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"text","hash":{},"data":data}) : helper)))
 	    + "</div>\r\n";
+	},"useData":true});
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var BaseComponent = __webpack_require__(3);
+	var compiledTemplate = __webpack_require__(30);
+	
+	var BestResult = function (_BaseComponent) {
+	    _inherits(BestResult, _BaseComponent);
+	
+	    function BestResult(options) {
+	        _classCallCheck(this, BestResult);
+	
+	        var _this = _possibleConstructorReturn(this, (BestResult.__proto__ || Object.getPrototypeOf(BestResult)).call(this, options.element));
+	
+	        _this._bestResult = 0;
+	
+	        _this.render();
+	        return _this;
+	    }
+	
+	    _createClass(BestResult, [{
+	        key: 'render',
+	        value: function render() {
+	            this._el.innerHTML = compiledTemplate({
+	                seconds: this._bestResult
+	            });
+	
+	            this.show();
+	        }
+	    }, {
+	        key: 'updateBestResult',
+	        value: function updateBestResult(seconds) {
+	            if (seconds < this._bestResult || this._bestResult === 0) {
+	                this._bestResult = seconds;
+	            }
+	        }
+	    }]);
+	
+	    return BestResult;
+	}(BaseComponent);
+	
+	module.exports = BestResult;
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Handlebars = __webpack_require__(6);
+	function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj); }
+	module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
+	    var helper;
+	
+	  return "<div>Best result: <span class=\"badge\">"
+	    + container.escapeExpression(((helper = (helper = helpers.seconds || (depth0 != null ? depth0.seconds : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : {},{"name":"seconds","hash":{},"data":data}) : helper)))
+	    + "</span></div>\r\n";
 	},"useData":true});
 
 /***/ }
