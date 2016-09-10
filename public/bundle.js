@@ -171,11 +171,13 @@
 	            this._setNumbers();
 	
 	            /* #remove code below ! */
-	            this.render(); // render bombs for test (cell was removed from DOM after this!)
-	            this._openCell(this._el.querySelector('[data-position="' + [position[0]] + '_' + [position[1]] + '"]'));
+	            /*this.render(); // render bombs for test (cell was removed from DOM after this!)
+	            this._openCell(
+	                this._el.querySelector(`[data-position="${[position[0]]}_${[position[1]]}"]`)
+	            );
 	            /* /remove */
 	
-	            //this._openCell(cell); // production code, uncomment this!
+	            this._openCell(cell); // production code, uncomment this!
 	
 	            this.on('click', this._onClick.bind(this), '.game-field__cell');
 	            this.trigger('gameStarted');
@@ -196,15 +198,49 @@
 	    }, {
 	        key: '_showOuterCells',
 	        value: function _showOuterCells(cell) {
-	            if (cell.classList.contains('open')) {}
-	            var pos = Game._getCellPosition(cell);
-	            console.log(pos);
-	            var cellValue = this._cells[pos[0]][pos[1]];
-	            if (typeof cellValue === 'number') {
-	                var outerBombs = this._calcOuterBombs(pos);
-	                console.log(outerBombs, +cell.textContent);
-	                this._openOuterCells(pos);
+	            var position = Game._getCellPosition(cell);
+	            var cellValue = this._cells[position[0]][position[1]];
+	            if (cell.classList.contains('open') && !cell.classList.contains('bomb') && typeof cellValue === 'number') {
+	                var markedBombs = this._calcOuterMarkers(position);
+	                if (+cell.textContent === markedBombs) {
+	                    this._openOuterCells(position);
+	                }
 	            }
+	        }
+	    }, {
+	        key: '_calcOuterMarkers',
+	        value: function _calcOuterMarkers(position) {
+	            var num = 0;
+	
+	            num += this._calcMarkedCells(position[0] - 1, position[1]);
+	
+	            num += this._calcMarkedCells(position[0], position[1]);
+	
+	            num += this._calcMarkedCells(position[0] + 1, position[1]);
+	
+	            return num;
+	        }
+	    }, {
+	        key: '_calcMarkedCells',
+	        value: function _calcMarkedCells(rowIndex, cellIndex) {
+	            var num = 0;
+	
+	            if (this._cells[rowIndex]) {
+	                num += this._markerInCell(rowIndex, cellIndex - 1);
+	
+	                num += this._markerInCell(rowIndex, cellIndex);
+	
+	                num += this._markerInCell(rowIndex, cellIndex + 1);
+	            }
+	
+	            return num;
+	        }
+	    }, {
+	        key: '_markerInCell',
+	        value: function _markerInCell(rowIndex, cellIndex) {
+	            var cellElement = this._el.querySelector('[data-position="' + rowIndex + '_' + cellIndex + '"]');
+	
+	            return cellElement ? cellElement.classList.contains('bomb') : false;
 	        }
 	    }, {
 	        key: '_onRightClick',
@@ -216,8 +252,11 @@
 	            e.preventDefault();
 	
 	            if (!cell.classList.contains('open')) {
-	                cell.classList.toggle('bomb');
-	                cell.classList.toggle('text-danger');
+	                if (!cell.classList.contains('bomb')) {
+	                    Game._addBombToCell(cell);
+	                } else {
+	                    Game._removeBombFromCell(cell);
+	                }
 	            }
 	        }
 	    }, {
@@ -232,32 +271,67 @@
 	            var cellValue = this._cells[position[0]][position[1]];
 	
 	            if (cellValue === this._cellTypes.bomb) {
+	                this._gameOver(false);
+	
+	                this._showAllBombs();
+	
 	                cell.classList.add('mistake');
-	                cell.classList.add('bomb');
-	                this._gameOver();
+	                cell.classList.add('text-danger');
+	
 	                return;
 	            }
 	
 	            cell.textContent = cellValue;
 	            cell.classList.add('open');
+	
+	            var victory = this._checkVictoryCondition();
+	            if (victory) {
+	                this._gameIsOver(true);
+	            }
+	
 	            if (cellValue === this._cellTypes.empty) {
 	                this._openOuterCells(position);
 	            }
 	        }
 	    }, {
+	        key: '_checkVictoryCondition',
+	        value: function _checkVictoryCondition() {
+	            var openedCells = this._el.querySelectorAll('.game-field__cell.open').length;
+	            var cleanCells = this._field.width * this._field.height - this._field.bombsCount;
+	            if (openedCells === cleanCells) {
+	                this._gameOver(true);
+	
+	                this._showAllBombs();
+	            }
+	        }
+	    }, {
+	        key: '_showAllBombs',
+	        value: function _showAllBombs() {
+	            for (var i = 0; i < this._field.height; i++) {
+	                for (var j = 0; j < this._field.width; j++) {
+	                    if (this._cells[i][j] === this._cellTypes.bomb) {
+	                        var cellElement = this._el.querySelector('[data-position="' + i + '_' + j + '"]');
+	                        Game._addBombToCell(cellElement);
+	                    }
+	                }
+	            }
+	        }
+	    }, {
 	        key: '_gameOver',
-	        value: function _gameOver() {
+	        value: function _gameOver(status) {
 	            this._gameIsOver = true;
-	            console.info('Game Over');
+	            var result = 'Game Over. You ' + (status ? 'won' : 'lose') + '!';
+	            console.info(result);
+	            alert(result);
 	        }
 	    }, {
 	        key: '_openOuterCells',
-	        value: function _openOuterCells(pos) {
-	            this._checkOuterCells(pos[0] - 1, pos[1]);
+	        value: function _openOuterCells(position) {
+	            this._checkOuterCells(position[0] - 1, position[1]);
 	
-	            this._checkOuterCells(pos[0], pos[1]);
+	            this._checkOuterCells(position[0], position[1]);
 	
-	            this._checkOuterCells(pos[0] + 1, pos[1]);
+	            this._checkOuterCells(position[0] + 1, position[1]);
 	        }
 	    }, {
 	        key: '_checkOuterCells',
@@ -275,21 +349,19 @@
 	        value: function _checkCell(rowIndex, cellIndex) {
 	            var cellElement = this._el.querySelector('[data-position="' + rowIndex + '_' + cellIndex + '"]');
 	            if (cellElement && !cellElement.classList.contains('open')) {
-	                if (this._cells[rowIndex][cellIndex] !== this._cellTypes.bomb) {
-	                    this._openCell(cellElement);
-	                }
+	                this._openCell(cellElement);
 	            }
 	        }
 	    }, {
 	        key: '_calcOuterBombs',
-	        value: function _calcOuterBombs(pos) {
+	        value: function _calcOuterBombs(position) {
 	            var num = 0;
 	
-	            num += this._calcBombsInOuterCells(pos[0] - 1, pos[1]);
+	            num += this._calcBombsInOuterCells(position[0] - 1, position[1]);
 	
-	            num += this._calcBombsInOuterCells(pos[0], pos[1]);
+	            num += this._calcBombsInOuterCells(position[0], position[1]);
 	
-	            num += this._calcBombsInOuterCells(pos[0] + 1, pos[1]);
+	            num += this._calcBombsInOuterCells(position[0] + 1, position[1]);
 	
 	            return num;
 	        }
@@ -401,6 +473,20 @@
 	        value: function _getCellPosition(cell) {
 	            var cellPos = cell.dataset.position.split('_');
 	            return [+cellPos[0], +cellPos[1]];
+	        }
+	    }, {
+	        key: '_addBombToCell',
+	        value: function _addBombToCell(cell) {
+	            cell.classList.add('bomb');
+	            cell.classList.remove('text-danger');
+	            cell.innerHTML = '<i class="fa fa-bomb" aria-hidden="true"></i>';
+	        }
+	    }, {
+	        key: '_removeBombFromCell',
+	        value: function _removeBombFromCell(cell) {
+	            cell.classList.remove('bomb');
+	            cell.classList.add('text-danger');
+	            cell.innerHTML = '';
 	        }
 	    }]);
 	

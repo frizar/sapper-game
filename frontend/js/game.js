@@ -60,13 +60,13 @@ class Game extends BaseComponent {
         this._setNumbers();
 
         /* #remove code below ! */
-        this.render(); // render bombs for test (cell was removed from DOM after this!)
+        /*this.render(); // render bombs for test (cell was removed from DOM after this!)
         this._openCell(
             this._el.querySelector(`[data-position="${[position[0]]}_${[position[1]]}"]`)
         );
         /* /remove */
 
-        //this._openCell(cell); // production code, uncomment this!
+        this._openCell(cell); // production code, uncomment this!
 
         this.on('click', this._onClick.bind(this), '.game-field__cell');
         this.trigger('gameStarted');
@@ -85,17 +85,48 @@ class Game extends BaseComponent {
     }
 
     _showOuterCells(cell) {
-        if (cell.classList.contains('open')) {
+        let position = Game._getCellPosition(cell);
+        let cellValue = this._cells[position[0]][position[1]];
+        if (cell.classList.contains('open') && !cell.classList.contains('bomb') && typeof cellValue === 'number') {
+            let markedBombs = this._calcOuterMarkers(position);
+            if (+cell.textContent === markedBombs) {
+                this._openOuterCells(position);
+            }
+        }
+    }
 
+    _calcOuterMarkers(position) {
+        let num = 0;
+
+        num += this._calcMarkedCells(position[0] - 1, position[1]);
+
+        num += this._calcMarkedCells(position[0], position[1]);
+
+        num += this._calcMarkedCells(position[0] + 1, position[1]);
+
+        return num;
+    }
+
+    _calcMarkedCells(rowIndex, cellIndex) {
+        let num = 0;
+
+        if (this._cells[rowIndex]) {
+            num += this._markerInCell(rowIndex, cellIndex - 1);
+
+            num += this._markerInCell(rowIndex, cellIndex);
+
+            num += this._markerInCell(rowIndex, cellIndex + 1);
         }
-        let pos = Game._getCellPosition(cell);
-        console.log(pos);
-        let cellValue = this._cells[pos[0]][pos[1]];
-        if (typeof cellValue === 'number') {
-            let outerBombs = this._calcOuterBombs(pos);
-            console.log(outerBombs, +cell.textContent);
-            this._openOuterCells(pos);
-        }
+
+        return num;
+    }
+
+    _markerInCell(rowIndex, cellIndex) {
+        let cellElement = this._el.querySelector(`[data-position="${rowIndex}_${cellIndex}"]`);
+
+        return cellElement ?
+            cellElement.classList.contains('bomb') :
+            false;
     }
 
     _onRightClick(e, cell) {
@@ -106,9 +137,24 @@ class Game extends BaseComponent {
         e.preventDefault();
 
         if (!cell.classList.contains('open')) {
-            cell.classList.toggle('bomb');
-            cell.classList.toggle('text-danger');
+            if (!cell.classList.contains('bomb')) {
+                Game._addBombToCell(cell);
+            } else {
+                Game._removeBombFromCell(cell);
+            }
         }
+    }
+
+    static _addBombToCell(cell) {
+        cell.classList.add('bomb');
+        cell.classList.remove('text-danger');
+        cell.innerHTML = '<i class="fa fa-bomb" aria-hidden="true"></i>';
+    }
+
+    static _removeBombFromCell(cell) {
+        cell.classList.remove('bomb');
+        cell.classList.add('text-danger');
+        cell.innerHTML = '';
     }
 
     _openCell(cell) {
@@ -119,33 +165,65 @@ class Game extends BaseComponent {
         let position = Game._getCellPosition(cell);
 
         let cellValue = this._cells[position[0]][position[1]];
-        
 
         if (cellValue === this._cellTypes.bomb) {
+            this._gameOver(false);
+
+            this._showAllBombs();
+
             cell.classList.add('mistake');
-            cell.classList.add('bomb');
-            this._gameOver();
+            cell.classList.add('text-danger');
+
             return;
         }
 
         cell.textContent = cellValue;
         cell.classList.add('open');
+
+        let victory = this._checkVictoryCondition();
+        if (victory) {
+            this._gameIsOver(true);
+        }
+
         if (cellValue === this._cellTypes.empty) {
             this._openOuterCells(position);
         }
     }
 
-    _gameOver() {
-        this._gameIsOver = true;
-        console.info('Game Over');
+    _checkVictoryCondition() {
+        let openedCells = this._el.querySelectorAll('.game-field__cell.open').length;
+        let cleanCells = this._field.width * this._field.height - this._field.bombsCount;
+        if (openedCells === cleanCells) {
+            this._gameOver(true);
+
+            this._showAllBombs();
+        }
     }
 
-    _openOuterCells(pos) {
-        this._checkOuterCells(pos[0] - 1, pos[1]);
+    _showAllBombs() {
+        for (let i = 0; i < this._field.height; i++) {
+            for (let j = 0; j < this._field.width; j++) {
+                if (this._cells[i][j] === this._cellTypes.bomb) {
+                    let cellElement = this._el.querySelector(`[data-position="${i}_${j}"]`);
+                    Game._addBombToCell(cellElement);
+                }
+            }
+        }
+    }
 
-        this._checkOuterCells(pos[0], pos[1]);
+    _gameOver(status) {
+        this._gameIsOver = true;
+        let result = `Game Over. You ${(status ? 'won' : 'lose')}!`;
+        console.info(result);
+        alert(result);
+    }
 
-        this._checkOuterCells(pos[0] + 1, pos[1]);
+    _openOuterCells(position) {
+        this._checkOuterCells(position[0] - 1, position[1]);
+
+        this._checkOuterCells(position[0], position[1]);
+
+        this._checkOuterCells(position[0] + 1, position[1]);
     }
 
     _checkOuterCells(rowIndex, cellIndex) {
@@ -161,20 +239,18 @@ class Game extends BaseComponent {
     _checkCell(rowIndex, cellIndex) {
         let cellElement = this._el.querySelector(`[data-position="${rowIndex}_${cellIndex}"]`);
         if (cellElement && !cellElement.classList.contains('open')) {
-            if (this._cells[rowIndex][cellIndex] !== this._cellTypes.bomb) {
-                this._openCell(cellElement);
-            }
+            this._openCell(cellElement);
         }
     }
 
-    _calcOuterBombs(pos) {
+    _calcOuterBombs(position) {
         let num = 0;
 
-        num += this._calcBombsInOuterCells(pos[0] - 1, pos[1]);
+        num += this._calcBombsInOuterCells(position[0] - 1, position[1]);
 
-        num += this._calcBombsInOuterCells(pos[0], pos[1]);
+        num += this._calcBombsInOuterCells(position[0], position[1]);
 
-        num += this._calcBombsInOuterCells(pos[0] + 1, pos[1]);
+        num += this._calcBombsInOuterCells(position[0] + 1, position[1]);
 
         return num;
     }
