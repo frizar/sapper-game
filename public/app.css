@@ -38,3 +38,16 @@
 [data-component="game"] .game-field__cell.mistake {
     background-color: #ffbcba;
 }
+
+[data-component="game"] .game-field__cell.marked {
+    position:relative;
+    background-color: #ffbcba;
+}
+
+[data-component="game"] .game-field__cell.marked:before {
+    content: '\f1e2';
+    font-family: FontAwesome;
+    left:7px;
+    position:absolute;
+    top:0;
+}

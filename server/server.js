@@ -8,9 +8,7 @@ const file = new nodeStatic.Server('.', {
 const port = 8080;
 
 const accept = (req, res) => {
-    if (req.url.startsWith('/bootstrap/')) {
-        req.url = '/node_modules' + req.url;
-    } else {
+    if (!req.url.startsWith('/node_modules/')) {
         req.url = '/public' + req.url;
     }
     file.serve(req, res);

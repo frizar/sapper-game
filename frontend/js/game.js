@@ -2,7 +2,7 @@
 
 const BaseComponent = require('./baseComponent');
 const Numbers = require('./numbers');
-const compiledTemplate = require('../templates/game.hbs');
+const gameFieldTemplate = require('../templates/game.hbs');
 
 class Game extends BaseComponent {
     constructor(options) {
@@ -30,12 +30,13 @@ class Game extends BaseComponent {
 
         this._onNewGame = this._onNewGame.bind(this);
         this._el.addEventListener('click', this._onNewGame);
+        this.on('contextmenu', this._onRightClick.bind(this), '.game-field__cell');
     }
 
     render() {
         this._updateGameFieldSize();
 
-        this._el.innerHTML = compiledTemplate({
+        this._el.innerHTML = gameFieldTemplate({
             cells: this._cells
         });
     }
@@ -65,23 +66,37 @@ class Game extends BaseComponent {
         );
         /* /remove */
 
-        //this._openCell(cell); // production code, uncomment this!
+        // this._openCell(cell); // production code, uncomment this!
 
         this.on('click', this._onClick.bind(this), '.game-field__cell');
         this.trigger('gameStarted');
     }
 
-    _onClick(e) {
+    _onClick(e, cell) {
         if (this._gameIsOver) {
             return;
         }
 
-        let cell = e.target;
-
         this._openCell(cell);
     }
 
+    _onRightClick(e, cell) {
+        if (this._gameIsOver) {
+            return;
+        }
+
+        e.preventDefault();
+
+        if (!cell.classList.contains('open')) {
+            cell.classList.toggle('marked');
+        }
+    }
+
     _openCell(cell) {
+        if (cell.classList.contains('marked')) {
+            return;
+        }
+
         let position = Game._getCellPosition(cell);
 
         let cellValue = this._cells[position[0]][position[1]];

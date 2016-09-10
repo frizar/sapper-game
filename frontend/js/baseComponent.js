@@ -19,15 +19,17 @@ class BaseComponent {
 
     on(eventName, handler, selector) {
         this._el.addEventListener(eventName, (e) => {
+            let closest = null;
+
             if (selector) {
-                let closest = e.target.closest(selector);
+                closest = e.target.closest(selector);
 
                 if (!closest || !this._el.contains(closest)) {
                     return;
                 }
             }
 
-            handler(e);
+            handler(e, closest);
         });
     }
 

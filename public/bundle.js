@@ -46,12 +46,11 @@
 
 	'use strict';
 	
-	let Page = __webpack_require__(1);
+	var Page = __webpack_require__(1);
 	
-	let page = new Page({
+	var page = new Page({
 	    element: document.querySelector('[data-app="sapper"]')
 	});
-
 
 /***/ },
 /* 1 */
@@ -59,11 +58,17 @@
 
 	'use strict';
 	
-	const Game = __webpack_require__(2);
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Game = __webpack_require__(2);
 	// const Timer = require('./timer');
 	
-	class Page {
-	    constructor(options) {
+	var Page = function () {
+	    function Page(options) {
+	        _classCallCheck(this, Page);
+	
 	        this._el = options.element;
 	
 	        this._game = new Game({
@@ -77,13 +82,17 @@
 	        // this._game.on('gameStarted', this._onGameStart.bind(this));
 	    }
 	
-	    _onGameStart(e) {
-	        // this._timer.start();
-	    }
-	}
+	    _createClass(Page, [{
+	        key: '_onGameStart',
+	        value: function _onGameStart(e) {
+	            // this._timer.start();
+	        }
+	    }]);
+	
+	    return Page;
+	}();
 	
 	module.exports = Page;
-
 
 /***/ },
 /* 2 */
@@ -91,19 +100,31 @@
 
 	'use strict';
 	
-	const BaseComponent = __webpack_require__(3);
-	const Numbers = __webpack_require__(4);
-	const compiledTemplate = __webpack_require__(5);
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	class Game extends BaseComponent {
-	    constructor(options) {
-	        super(options.element);
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	        this._gameIsOver = false;
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
-	        this._cells = [];
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	        this._field = {
+	var BaseComponent = __webpack_require__(3);
+	var Numbers = __webpack_require__(4);
+	var gameFieldTemplate = __webpack_require__(5);
+	
+	var Game = function (_BaseComponent) {
+	    _inherits(Game, _BaseComponent);
+	
+	    function Game(options) {
+	        _classCallCheck(this, Game);
+	
+	        var _this = _possibleConstructorReturn(this, (Game.__proto__ || Object.getPrototypeOf(Game)).call(this, options.element));
+	
+	        _this._gameIsOver = false;
+	
+	        _this._cells = [];
+	
+	        _this._field = {
 	            width: 9,
 	            height: 9,
 	            bombsCount: 10,
@@ -111,245 +132,283 @@
 	            cellSize: 30
 	        };
 	
-	        this._cellTypes = {
+	        _this._cellTypes = {
 	            empty: '',
 	            bomb: 'X'
 	        };
 	
-	        this._resetCells();
-	        this.render();
+	        _this._resetCells();
+	        _this.render();
 	
-	        this._onNewGame = this._onNewGame.bind(this);
-	        this._el.addEventListener('click', this._onNewGame);
+	        _this._onNewGame = _this._onNewGame.bind(_this);
+	        _this._el.addEventListener('click', _this._onNewGame);
+	        _this.on('contextmenu', _this._onRightClick.bind(_this), '.game-field__cell');
+	        return _this;
 	    }
 	
-	    render() {
-	        this._updateGameFieldSize();
+	    _createClass(Game, [{
+	        key: 'render',
+	        value: function render() {
+	            this._updateGameFieldSize();
 	
-	        this._el.innerHTML = compiledTemplate({
-	            cells: this._cells
-	        });
-	    }
-	
-	    static _getCellPosition(cell) {
-	        let cellPos = cell.dataset.position.split('_');
-	        return [+cellPos[0], +cellPos[1]];
-	    }
-	
-	    _onNewGame(e) {
-	        let cell = e.target.closest('.game-field__cell');
-	        if (!cell || !this._el.contains(cell)) {
-	            return;
+	            this._el.innerHTML = gameFieldTemplate({
+	                cells: this._cells
+	            });
 	        }
+	    }, {
+	        key: '_onNewGame',
+	        value: function _onNewGame(e) {
+	            var cell = e.target.closest('.game-field__cell');
+	            if (!cell || !this._el.contains(cell)) {
+	                return;
+	            }
 	
-	        this._el.removeEventListener('click', this._onNewGame);
+	            this._el.removeEventListener('click', this._onNewGame);
 	
-	        let position = Game._getCellPosition(cell);
+	            var position = Game._getCellPosition(cell);
 	
-	        this._setBombs(position);
-	        this._setNumbers();
+	            this._setBombs(position);
+	            this._setNumbers();
 	
-	        /* #remove code below ! */
-	        this.render(); // render bombs for test (cell was removed from DOM after this!)
-	        this._openCell(
-	            this._el.querySelector(`[data-position="${[position[0]]}_${[position[1]]}"]`)
-	        );
-	        /* /remove */
+	            /* #remove code below ! */
+	            this.render(); // render bombs for test (cell was removed from DOM after this!)
+	            this._openCell(this._el.querySelector('[data-position="' + [position[0]] + '_' + [position[1]] + '"]'));
+	            /* /remove */
 	
-	        //this._openCell(cell); // production code, uncomment this!
+	            // this._openCell(cell); // production code, uncomment this!
 	
-	        this.on('click', this._onClick.bind(this), '.game-field__cell');
-	        this.trigger('gameStarted');
-	    }
-	
-	    _onClick(e) {
-	        if (this._gameIsOver) {
-	            return;
+	            this.on('click', this._onClick.bind(this), '.game-field__cell');
+	            this.trigger('gameStarted');
 	        }
+	    }, {
+	        key: '_onClick',
+	        value: function _onClick(e, cell) {
+	            if (this._gameIsOver) {
+	                return;
+	            }
 	
-	        let cell = e.target;
-	
-	        this._openCell(cell);
-	    }
-	
-	    _openCell(cell) {
-	        let position = Game._getCellPosition(cell);
-	
-	        let cellValue = this._cells[position[0]][position[1]];
-	        cell.textContent = cellValue;
-	
-	        if (cellValue === this._cellTypes.bomb) {
-	            cell.classList.add('mistake');
-	            this._gameOver();
-	            return;
+	            this._openCell(cell);
 	        }
+	    }, {
+	        key: '_onRightClick',
+	        value: function _onRightClick(e, cell) {
+	            if (this._gameIsOver) {
+	                return;
+	            }
 	
-	        cell.classList.add('open');
-	        if (cellValue === this._cellTypes.empty) {
-	            this._openOuterCells(position);
-	        }
-	    }
+	            e.preventDefault();
 	
-	    _gameOver() {
-	        this._gameIsOver = true;
-	        console.info('Game Over');
-	    }
-	
-	    _openOuterCells(pos) {
-	        this._checkOuterCells(pos[0] - 1, pos[1]);
-	
-	        this._checkOuterCells(pos[0], pos[1]);
-	
-	        this._checkOuterCells(pos[0] + 1, pos[1]);
-	    }
-	
-	    _checkOuterCells(rowIndex, cellIndex) {
-	        if (this._cells[rowIndex]) {
-	            this._checkCell(rowIndex, cellIndex - 1);
-	
-	            this._checkCell(rowIndex, cellIndex);
-	
-	            this._checkCell(rowIndex, cellIndex + 1);
-	        }
-	    }
-	
-	    _checkCell(rowIndex, cellIndex) {
-	        let cellElement = this._el.querySelector(`[data-position="${rowIndex}_${cellIndex}"]`);
-	        if (cellElement && !cellElement.classList.contains('open')) {
-	            if (this._cells[rowIndex][cellIndex] !== this._cellTypes.bomb) {
-	                this._openCell(cellElement);
+	            if (!cell.classList.contains('open')) {
+	                cell.classList.toggle('marked');
 	            }
 	        }
-	    }
+	    }, {
+	        key: '_openCell',
+	        value: function _openCell(cell) {
+	            if (cell.classList.contains('marked')) {
+	                return;
+	            }
 	
-	    _calcOuterBombs(pos) {
-	        let num = 0;
+	            var position = Game._getCellPosition(cell);
 	
-	        let row = pos[0] - 1;
-	        if (this._cells[row]) {
-	            let cellLeftTop = this._cells[row][pos[1] - 1];
-	            if (cellLeftTop && cellLeftTop === this._cellTypes.bomb) {
+	            var cellValue = this._cells[position[0]][position[1]];
+	            cell.textContent = cellValue;
+	
+	            if (cellValue === this._cellTypes.bomb) {
+	                cell.classList.add('mistake');
+	                this._gameOver();
+	                return;
+	            }
+	
+	            cell.classList.add('open');
+	            if (cellValue === this._cellTypes.empty) {
+	                this._openOuterCells(position);
+	            }
+	        }
+	    }, {
+	        key: '_gameOver',
+	        value: function _gameOver() {
+	            this._gameIsOver = true;
+	            console.info('Game Over');
+	        }
+	    }, {
+	        key: '_openOuterCells',
+	        value: function _openOuterCells(pos) {
+	            this._checkOuterCells(pos[0] - 1, pos[1]);
+	
+	            this._checkOuterCells(pos[0], pos[1]);
+	
+	            this._checkOuterCells(pos[0] + 1, pos[1]);
+	        }
+	    }, {
+	        key: '_checkOuterCells',
+	        value: function _checkOuterCells(rowIndex, cellIndex) {
+	            if (this._cells[rowIndex]) {
+	                this._checkCell(rowIndex, cellIndex - 1);
+	
+	                this._checkCell(rowIndex, cellIndex);
+	
+	                this._checkCell(rowIndex, cellIndex + 1);
+	            }
+	        }
+	    }, {
+	        key: '_checkCell',
+	        value: function _checkCell(rowIndex, cellIndex) {
+	            var cellElement = this._el.querySelector('[data-position="' + rowIndex + '_' + cellIndex + '"]');
+	            if (cellElement && !cellElement.classList.contains('open')) {
+	                if (this._cells[rowIndex][cellIndex] !== this._cellTypes.bomb) {
+	                    this._openCell(cellElement);
+	                }
+	            }
+	        }
+	    }, {
+	        key: '_calcOuterBombs',
+	        value: function _calcOuterBombs(pos) {
+	            var num = 0;
+	
+	            var row = pos[0] - 1;
+	            if (this._cells[row]) {
+	                var cellLeftTop = this._cells[row][pos[1] - 1];
+	                if (cellLeftTop && cellLeftTop === this._cellTypes.bomb) {
+	                    num++;
+	                }
+	
+	                var cellTop = this._cells[row][pos[1]];
+	                if (cellTop && cellTop === this._cellTypes.bomb) {
+	                    num++;
+	                }
+	
+	                var cellTopRight = this._cells[row][pos[1] + 1];
+	                if (cellTopRight && cellTopRight === this._cellTypes.bomb) {
+	                    num++;
+	                }
+	            }
+	
+	            var cellLeft = this._cells[pos[0]][pos[1] - 1];
+	            if (cellLeft && cellLeft === this._cellTypes.bomb) {
 	                num++;
 	            }
 	
-	            let cellTop = this._cells[row][pos[1]];
-	            if (cellTop && cellTop === this._cellTypes.bomb) {
+	            var cellRight = this._cells[pos[0]][pos[1] + 1];
+	            if (cellRight && cellRight === this._cellTypes.bomb) {
 	                num++;
 	            }
 	
-	            let cellTopRight = this._cells[row][pos[1] + 1];
-	            if (cellTopRight && cellTopRight === this._cellTypes.bomb) {
-	                num++;
+	            row = pos[0] + 1;
+	            if (this._cells[row]) {
+	                var cellBottomLeft = this._cells[pos[0] + 1][pos[1] - 1];
+	                if (cellBottomLeft && cellBottomLeft === this._cellTypes.bomb) {
+	                    num++;
+	                }
+	
+	                var cellBottom = this._cells[pos[0] + 1][pos[1]];
+	                if (cellBottom && cellBottom === this._cellTypes.bomb) {
+	                    num++;
+	                }
+	
+	                var cellBottomRight = this._cells[pos[0] + 1][pos[1] + 1];
+	                if (cellBottomRight && cellBottomRight === this._cellTypes.bomb) {
+	                    num++;
+	                }
+	            }
+	
+	            return num;
+	        }
+	
+	        /**
+	         * Устанавливает мины на поле
+	         * @param excludedCell - исключенная ячейка
+	         * (нужна при старте игры, чтобы нельзя было проиграть с первого же клика)
+	         * @private
+	         */
+	
+	    }, {
+	        key: '_setBombs',
+	        value: function _setBombs(excludedCell) {
+	            this._field.bombsPlanted = 0;
+	
+	            while (this._field.bombsPlanted < this._field.bombsCount) {
+	                var randomRow = Numbers.getRandomInteger(0, this._field.height - 1);
+	                var randomCell = Numbers.getRandomInteger(0, this._field.width - 1);
+	
+	                if (excludedCell[0] === randomRow && excludedCell[1] === randomCell) {
+	                    continue;
+	                }
+	
+	                if (this._cells[randomRow][randomCell] === this._cellTypes.empty) {
+	                    this._cells[randomRow][randomCell] = this._cellTypes.bomb;
+	                    this._field.bombsPlanted++;
+	                }
 	            }
 	        }
 	
-	        let cellLeft = this._cells[pos[0]][pos[1] - 1];
-	        if (cellLeft && cellLeft === this._cellTypes.bomb) {
-	            num++;
-	        }
+	        /**
+	         * Считает количество мин вокруг каждой свободной ячейки и
+	         * устанавливает эти значения в массив поля (0 игнорируется)
+	         * @private
+	         */
 	
-	        let cellRight = this._cells[pos[0]][pos[1] + 1];
-	        if (cellRight && cellRight === this._cellTypes.bomb) {
-	            num++;
-	        }
-	
-	        row = pos[0] + 1;
-	        if (this._cells[row]) {
-	            let cellBottomLeft = this._cells[pos[0] + 1][pos[1] - 1];
-	            if (cellBottomLeft && cellBottomLeft === this._cellTypes.bomb) {
-	                num++;
-	            }
-	
-	            let cellBottom = this._cells[pos[0] + 1][pos[1]];
-	            if (cellBottom && cellBottom === this._cellTypes.bomb) {
-	                num++;
-	            }
-	
-	            let cellBottomRight = this._cells[pos[0] + 1][pos[1] + 1];
-	            if (cellBottomRight && cellBottomRight === this._cellTypes.bomb) {
-	                num++;
-	            }
-	        }
-	
-	        return num;
-	    }
-	
-	    /**
-	     * Устанавливает мины на поле
-	     * @param excludedCell - исключенная ячейка
-	     * (нужна при старте игры, чтобы нельзя было проиграть с первого же клика)
-	     * @private
-	     */
-	    _setBombs(excludedCell) {
-	        this._field.bombsPlanted = 0;
-	
-	        while (this._field.bombsPlanted < this._field.bombsCount) {
-	            let randomRow = Numbers.getRandomInteger(0, this._field.height - 1);
-	            let randomCell = Numbers.getRandomInteger(0, this._field.width - 1);
-	
-	            if (excludedCell[0] === randomRow && excludedCell[1] === randomCell) {
-	                continue;
-	            }
-	
-	            if (this._cells[randomRow][randomCell] === this._cellTypes.empty) {
-	                this._cells[randomRow][randomCell] = this._cellTypes.bomb;
-	                this._field.bombsPlanted++;
-	            }
-	        }
-	    }
-	
-	    /**
-	     * Считает количество мин вокруг каждой свободной ячейки и
-	     * устанавливает эти значения в массив поля (0 игнорируется)
-	     * @private
-	     */
-	    _setNumbers() {
-	        for (let i = 0; i < this._field.height; i++) {
-	            for (let j = 0; j < this._field.width; j++) {
-	                if (this._cells[i][j] === this._cellTypes.empty) {
-	                    let outerBombs = this._calcOuterBombs([i, j]);
-	                    if (outerBombs) {
-	                        this._cells[i][j] = outerBombs;
+	    }, {
+	        key: '_setNumbers',
+	        value: function _setNumbers() {
+	            for (var i = 0; i < this._field.height; i++) {
+	                for (var j = 0; j < this._field.width; j++) {
+	                    if (this._cells[i][j] === this._cellTypes.empty) {
+	                        var outerBombs = this._calcOuterBombs([i, j]);
+	                        if (outerBombs) {
+	                            this._cells[i][j] = outerBombs;
+	                        }
 	                    }
 	                }
 	            }
 	        }
-	    }
 	
-	    /**
-	     * Устанавливает размер игрового поля.
-	     * Высота = кол-во строк * размер ячейки + рамка игрового поля.
-	     * Ширина = кол-во ячеек в строке * размер ячейки + рамка игрового поля.
-	     * @private
-	     */
-	    _updateGameFieldSize() {
-	        this._el.style.height = this._cells.length * this._field.cellSize
-	            + this._el.clientLeft + this._el.clientTop + 'px';
+	        /**
+	         * Устанавливает размер игрового поля.
+	         * Высота = кол-во строк * размер ячейки + рамка игрового поля.
+	         * Ширина = кол-во ячеек в строке * размер ячейки + рамка игрового поля.
+	         * @private
+	         */
 	
-	        this._el.style.width = this._cells[0].length * this._field.cellSize
-	            + this._el.clientLeft + this._el.clientTop + 'px';
-	    }
+	    }, {
+	        key: '_updateGameFieldSize',
+	        value: function _updateGameFieldSize() {
+	            this._el.style.height = this._cells.length * this._field.cellSize + this._el.clientLeft + this._el.clientTop + 'px';
 	
-	    /**
-	     * Создает массив строк и ячеек в них (по размеру поля), заполняя их пустыми строками.
-	     * Пустая строка === свободная ячейка, вокруг которой нет мин.
-	     * @private
-	     */
-	    _resetCells() {
-	        this._cells = [];
+	            this._el.style.width = this._cells[0].length * this._field.cellSize + this._el.clientLeft + this._el.clientTop + 'px';
+	        }
 	
-	        for (let i = 0; i < this._field.height; i++) {
-	            this._cells[i] = [];
+	        /**
+	         * Создает массив строк и ячеек в них (по размеру поля), заполняя их пустыми строками.
+	         * Пустая строка === свободная ячейка, вокруг которой нет мин.
+	         * @private
+	         */
 	
-	            for (let j = 0; j < this._field.width; j++) {
-	                this._cells[i][j] = this._cellTypes.empty;
+	    }, {
+	        key: '_resetCells',
+	        value: function _resetCells() {
+	            this._cells = [];
+	
+	            for (var i = 0; i < this._field.height; i++) {
+	                this._cells[i] = [];
+	
+	                for (var j = 0; j < this._field.width; j++) {
+	                    this._cells[i][j] = this._cellTypes.empty;
+	                }
 	            }
 	        }
-	    }
-	}
+	    }], [{
+	        key: '_getCellPosition',
+	        value: function _getCellPosition(cell) {
+	            var cellPos = cell.dataset.position.split('_');
+	            return [+cellPos[0], +cellPos[1]];
+	        }
+	    }]);
+	
+	    return Game;
+	}(BaseComponent);
 	
 	module.exports = Game;
-
 
 /***/ },
 /* 3 */
@@ -357,48 +416,66 @@
 
 	'use strict';
 	
-	class BaseComponent {
-	    constructor(element) {
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var BaseComponent = function () {
+	    function BaseComponent(element) {
+	        _classCallCheck(this, BaseComponent);
+	
 	        this._el = element;
 	    }
 	
-	    hide() {
-	        this._el.classList.add('js-hidden');
-	    }
+	    _createClass(BaseComponent, [{
+	        key: 'hide',
+	        value: function hide() {
+	            this._el.classList.add('js-hidden');
+	        }
+	    }, {
+	        key: 'show',
+	        value: function show() {
+	            this._el.classList.remove('js-hidden');
+	        }
+	    }, {
+	        key: 'getElement',
+	        value: function getElement() {
+	            return this._el;
+	        }
+	    }, {
+	        key: 'on',
+	        value: function on(eventName, handler, selector) {
+	            var _this = this;
 	
-	    show() {
-	        this._el.classList.remove('js-hidden');
-	    }
+	            this._el.addEventListener(eventName, function (e) {
+	                var closest = null;
 	
-	    getElement() {
-	        return this._el;
-	    }
+	                if (selector) {
+	                    closest = e.target.closest(selector);
 	
-	    on(eventName, handler, selector) {
-	        this._el.addEventListener(eventName, (e) => {
-	            if (selector) {
-	                let closest = e.target.closest(selector);
-	
-	                if (!closest || !this._el.contains(closest)) {
-	                    return;
+	                    if (!closest || !_this._el.contains(closest)) {
+	                        return;
+	                    }
 	                }
-	            }
 	
-	            handler(e);
-	        });
-	    }
+	                handler(e, closest);
+	            });
+	        }
+	    }, {
+	        key: 'trigger',
+	        value: function trigger(eventName, data) {
+	            var customEvent = new CustomEvent(eventName, {
+	                detail: data
+	            });
 	
-	    trigger(eventName, data) {
-	        let customEvent = new CustomEvent(eventName, {
-	            detail: data
-	        });
+	            this._el.dispatchEvent(customEvent);
+	        }
+	    }]);
 	
-	        this._el.dispatchEvent(customEvent);
-	    }
-	}
+	    return BaseComponent;
+	}();
 	
 	module.exports = BaseComponent;
-
 
 /***/ },
 /* 4 */
@@ -406,19 +483,27 @@
 
 	'use strict';
 	
-	class Numbers {
-	    constructor() {
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Numbers = function () {
+	    function Numbers() {
+	        _classCallCheck(this, Numbers);
 	    }
 	
-	    static getRandomInteger(min, max) {
-	        let random = min + Math.random() * (max + 1 - min);
-	        return Math.floor(random);
-	    }
-	}
+	    _createClass(Numbers, null, [{
+	        key: 'getRandomInteger',
+	        value: function getRandomInteger(min, max) {
+	            var random = min + Math.random() * (max + 1 - min);
+	            return Math.floor(random);
+	        }
+	    }]);
+	
+	    return Numbers;
+	}();
 	
 	module.exports = Numbers;
-
 
 /***/ },
 /* 5 */
