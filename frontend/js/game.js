@@ -34,11 +34,11 @@ class Game extends BaseComponent {
     }
 
     render() {
-        this._updateGameFieldSize();
-
         this._el.innerHTML = gameFieldTemplate({
             cells: this._cells
         });
+
+        this._updateGameFieldSize();
     }
 
     static _getCellPosition(cell) {
@@ -317,16 +317,13 @@ class Game extends BaseComponent {
 
     /**
      * Устанавливает размер игрового поля.
-     * Высота = кол-во строк * размер ячейки + рамка игрового поля.
-     * Ширина = кол-во ячеек в строке * размер ячейки + рамка игрового поля.
      * @private
      */
     _updateGameFieldSize() {
-        this._el.style.height = this._cells.length * this._field.cellSize
-            + this._el.clientLeft + this._el.clientTop + 'px';
-
-        this._el.style.width = this._cells[0].length * this._field.cellSize
-            + this._el.clientLeft + this._el.clientTop + 'px';
+        // высота = кол-во строк * размер ячейки + рамка игрового поля
+        this._el.style.height = this._cells.length * this._field.cellSize + 20 + 'px';
+        // высота = кол-во строк * размер ячейки + рамка игрового поля
+        this._el.style.width = this._cells[0].length * this._field.cellSize + 20 + 'px';
     }
 
     /**

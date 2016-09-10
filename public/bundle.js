@@ -48,7 +48,7 @@
 	
 	var Page = __webpack_require__(1);
 	
-	var page = new Page({
+	new Page({
 	    element: document.querySelector('[data-app="sapper"]')
 	});
 
@@ -149,11 +149,11 @@
 	    _createClass(Game, [{
 	        key: 'render',
 	        value: function render() {
-	            this._updateGameFieldSize();
-	
 	            this._el.innerHTML = gameFieldTemplate({
 	                cells: this._cells
 	            });
+	
+	            this._updateGameFieldSize();
 	        }
 	    }, {
 	        key: '_onNewGame',
@@ -436,17 +436,16 @@
 	
 	        /**
 	         * Устанавливает размер игрового поля.
-	         * Высота = кол-во строк * размер ячейки + рамка игрового поля.
-	         * Ширина = кол-во ячеек в строке * размер ячейки + рамка игрового поля.
 	         * @private
 	         */
 	
 	    }, {
 	        key: '_updateGameFieldSize',
 	        value: function _updateGameFieldSize() {
-	            this._el.style.height = this._cells.length * this._field.cellSize + this._el.clientLeft + this._el.clientTop + 'px';
-	
-	            this._el.style.width = this._cells[0].length * this._field.cellSize + this._el.clientLeft + this._el.clientTop + 'px';
+	            // высота = кол-во строк * размер ячейки + рамка игрового поля
+	            this._el.style.height = this._cells.length * this._field.cellSize + 20 + 'px';
+	            // высота = кол-во строк * размер ячейки + рамка игрового поля
+	            this._el.style.width = this._cells[0].length * this._field.cellSize + 20 + 'px';
 	        }
 	
 	        /**
@@ -599,7 +598,8 @@
 	module.exports = (Handlebars["default"] || Handlebars).template({"1":function(container,depth0,helpers,partials,data,blockParams,depths) {
 	    var stack1;
 	
-	  return ((stack1 = helpers.each.call(depth0 != null ? depth0 : {},depth0,{"name":"each","hash":{},"fn":container.program(2, data, 0, blockParams, depths),"inverse":container.noop,"data":data})) != null ? stack1 : "");
+	  return ((stack1 = helpers.each.call(depth0 != null ? depth0 : {},depth0,{"name":"each","hash":{},"fn":container.program(2, data, 0, blockParams, depths),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+	    + "    <div class=\"clearfix\"></div>\r\n";
 	},"2":function(container,depth0,helpers,partials,data,blockParams,depths) {
 	    var helper, alias1=container.lambda, alias2=container.escapeExpression;
 	
