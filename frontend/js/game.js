@@ -59,6 +59,10 @@ class Game extends BaseComponent {
         this._gameType = difficulty;
     }
 
+    getDifficulty() {
+        return this._gameType;
+    }
+
     _initField() {
         this._field = {
             width: this._gameTypes[this._gameType][0],

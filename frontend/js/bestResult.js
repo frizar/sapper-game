@@ -7,7 +7,7 @@ class BestResult extends BaseComponent {
     constructor(options) {
         super(options.element);
 
-        this._bestResult = 0;
+        this._bestResult = {};
 
         this.render();
     }
@@ -16,13 +16,21 @@ class BestResult extends BaseComponent {
         this._el.innerHTML = compiledTemplate({
             seconds: this._bestResult
         });
-
-        this.show();
     }
 
-    updateBestResult(seconds) {
-        if (seconds < this._bestResult || this._bestResult === 0) {
-            this._bestResult = seconds;
+    setDefaultValues(values) {
+        for (let value in values) {
+            if (!values.hasOwnProperty(value)) {
+                return;
+            }
+
+            this._bestResult[value] = +value || 0;
+        }
+    }
+
+    updateBestResult(difficulty, seconds) {
+        if (seconds < this._bestResult[difficulty] || this._bestResult[difficulty] === 0) {
+            this._bestResult[difficulty] = seconds;
         }
     }
 }

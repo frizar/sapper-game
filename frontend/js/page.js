@@ -35,13 +35,17 @@ class Page {
             element: document.querySelector('[data-component="config"]')
         });
 
-        this._config.setList(Game.getGameTypes());
+        let gameTypes = Game.getGameTypes();
+
+        this._config.setList(gameTypes);
         this._config.render();
+
+        this._bestResult.setDefaultValues(gameTypes);
+        this._bestResult.render();
 
         this._game.on('gameStarted', this._onGameStart.bind(this));
         this._game.on('gameOver', this._onGameOver.bind(this));
         this._newGame.on('newGame', this._onNewGame.bind(this));
-        this._config.on('configChanged', this._configChanged.bind(this));
     }
 
     _onGameStart(e) {
@@ -61,8 +65,9 @@ class Page {
 
         if (status) {
             let seconds = this._timer.getSeconds();
+            let difficulty = this._game.getDifficulty();
 
-            this._bestResult.updateBestResult(seconds);
+            this._bestResult.updateBestResult(difficulty, seconds);
             this._bestResult.render();
         }
     }
@@ -70,13 +75,11 @@ class Page {
     _onNewGame(e) {
         this._alert.hide();
         this._timer.clean();
-        this._game.restartGame();
-    }
 
-    _configChanged(e) {
-        let difficulty = e.detail;
-
+        let difficulty = this._config.getValue();
         this._game.changeDifficulty(difficulty);
+
+        this._game.restartGame();
     }
 }
 
