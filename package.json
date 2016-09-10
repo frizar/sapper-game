@@ -10,7 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "bootstrap": "^3.3.7",
-    "es6-shim": "^0.35.1",
     "font-awesome": "^4.6.3",
     "handlebars": "^4.0.5",
     "handlebars-loader": "^1.4.0",

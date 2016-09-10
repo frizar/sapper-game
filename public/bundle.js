@@ -175,7 +175,7 @@
 	            this._openCell(this._el.querySelector('[data-position="' + [position[0]] + '_' + [position[1]] + '"]'));
 	            /* /remove */
 	
-	            // this._openCell(cell); // production code, uncomment this!
+	            //this._openCell(cell); // production code, uncomment this!
 	
 	            this.on('click', this._onClick.bind(this), '.game-field__cell');
 	            this.trigger('gameStarted');
@@ -187,7 +187,24 @@
 	                return;
 	            }
 	
-	            this._openCell(cell);
+	            if (e.which === 1) {
+	                this._openCell(cell);
+	            } else if (e.which === 2) {
+	                this._showOuterCells(cell);
+	            }
+	        }
+	    }, {
+	        key: '_showOuterCells',
+	        value: function _showOuterCells(cell) {
+	            if (cell.classList.contains('open')) {}
+	            var pos = Game._getCellPosition(cell);
+	            console.log(pos);
+	            var cellValue = this._cells[pos[0]][pos[1]];
+	            if (typeof cellValue === 'number') {
+	                var outerBombs = this._calcOuterBombs(pos);
+	                console.log(outerBombs, +cell.textContent);
+	                this._openOuterCells(pos);
+	            }
 	        }
 	    }, {
 	        key: '_onRightClick',
@@ -199,27 +216,29 @@
 	            e.preventDefault();
 	
 	            if (!cell.classList.contains('open')) {
-	                cell.classList.toggle('marked');
+	                cell.classList.toggle('bomb');
+	                cell.classList.toggle('text-danger');
 	            }
 	        }
 	    }, {
 	        key: '_openCell',
 	        value: function _openCell(cell) {
-	            if (cell.classList.contains('marked')) {
+	            if (cell.classList.contains('bomb')) {
 	                return;
 	            }
 	
 	            var position = Game._getCellPosition(cell);
 	
 	            var cellValue = this._cells[position[0]][position[1]];
-	            cell.textContent = cellValue;
 	
 	            if (cellValue === this._cellTypes.bomb) {
 	                cell.classList.add('mistake');
+	                cell.classList.add('bomb');
 	                this._gameOver();
 	                return;
 	            }
 	
+	            cell.textContent = cellValue;
 	            cell.classList.add('open');
 	            if (cellValue === this._cellTypes.empty) {
 	                this._openOuterCells(position);
@@ -266,53 +285,33 @@
 	        value: function _calcOuterBombs(pos) {
 	            var num = 0;
 	
-	            var row = pos[0] - 1;
-	            if (this._cells[row]) {
-	                var cellLeftTop = this._cells[row][pos[1] - 1];
-	                if (cellLeftTop && cellLeftTop === this._cellTypes.bomb) {
-	                    num++;
-	                }
+	            num += this._calcBombsInOuterCells(pos[0] - 1, pos[1]);
 	
-	                var cellTop = this._cells[row][pos[1]];
-	                if (cellTop && cellTop === this._cellTypes.bomb) {
-	                    num++;
-	                }
+	            num += this._calcBombsInOuterCells(pos[0], pos[1]);
 	
-	                var cellTopRight = this._cells[row][pos[1] + 1];
-	                if (cellTopRight && cellTopRight === this._cellTypes.bomb) {
-	                    num++;
-	                }
-	            }
+	            num += this._calcBombsInOuterCells(pos[0] + 1, pos[1]);
 	
-	            var cellLeft = this._cells[pos[0]][pos[1] - 1];
-	            if (cellLeft && cellLeft === this._cellTypes.bomb) {
-	                num++;
-	            }
+	            return num;
+	        }
+	    }, {
+	        key: '_calcBombsInOuterCells',
+	        value: function _calcBombsInOuterCells(rowIndex, cellIndex) {
+	            var num = 0;
 	
-	            var cellRight = this._cells[pos[0]][pos[1] + 1];
-	            if (cellRight && cellRight === this._cellTypes.bomb) {
-	                num++;
-	            }
+	            if (this._cells[rowIndex]) {
+	                num += +this._bombInCell(rowIndex, cellIndex - 1);
 	
-	            row = pos[0] + 1;
-	            if (this._cells[row]) {
-	                var cellBottomLeft = this._cells[pos[0] + 1][pos[1] - 1];
-	                if (cellBottomLeft && cellBottomLeft === this._cellTypes.bomb) {
-	                    num++;
-	                }
+	                num += +this._bombInCell(rowIndex, cellIndex);
 	
-	                var cellBottom = this._cells[pos[0] + 1][pos[1]];
-	                if (cellBottom && cellBottom === this._cellTypes.bomb) {
-	                    num++;
-	                }
-	
-	                var cellBottomRight = this._cells[pos[0] + 1][pos[1] + 1];
-	                if (cellBottomRight && cellBottomRight === this._cellTypes.bomb) {
-	                    num++;
-	                }
+	                num += +this._bombInCell(rowIndex, cellIndex + 1);
 	            }
 	
 	            return num;
+	        }
+	    }, {
+	        key: '_bombInCell',
+	        value: function _bombInCell(rowIndex, cellIndex) {
+	            return this._cells[rowIndex][cellIndex] === this._cellTypes.bomb;
 	        }
 	
 	        /**

@@ -39,12 +39,12 @@
     background-color: #ffbcba;
 }
 
-[data-component="game"] .game-field__cell.marked {
+[data-component="game"] .game-field__cell.bomb {
     position:relative;
-    background-color: #ffbcba;
+    /*background-color: #ffbcba;*/
 }
 
-[data-component="game"] .game-field__cell.marked:before {
+[data-component="game"] .game-field__cell.bomb:before {
     content: '\f1e2';
     font-family: FontAwesome;
     left:7px;

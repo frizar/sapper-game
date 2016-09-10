@@ -66,7 +66,7 @@ class Game extends BaseComponent {
         );
         /* /remove */
 
-        // this._openCell(cell); // production code, uncomment this!
+        //this._openCell(cell); // production code, uncomment this!
 
         this.on('click', this._onClick.bind(this), '.game-field__cell');
         this.trigger('gameStarted');
@@ -77,7 +77,25 @@ class Game extends BaseComponent {
             return;
         }
 
-        this._openCell(cell);
+        if (e.which === 1) {
+            this._openCell(cell);
+        } else if (e.which === 2) {
+            this._showOuterCells(cell);
+        }
+    }
+
+    _showOuterCells(cell) {
+        if (cell.classList.contains('open')) {
+
+        }
+        let pos = Game._getCellPosition(cell);
+        console.log(pos);
+        let cellValue = this._cells[pos[0]][pos[1]];
+        if (typeof cellValue === 'number') {
+            let outerBombs = this._calcOuterBombs(pos);
+            console.log(outerBombs, +cell.textContent);
+            this._openOuterCells(pos);
+        }
     }
 
     _onRightClick(e, cell) {
@@ -88,26 +106,29 @@ class Game extends BaseComponent {
         e.preventDefault();
 
         if (!cell.classList.contains('open')) {
-            cell.classList.toggle('marked');
+            cell.classList.toggle('bomb');
+            cell.classList.toggle('text-danger');
         }
     }
 
     _openCell(cell) {
-        if (cell.classList.contains('marked')) {
+        if (cell.classList.contains('bomb')) {
             return;
         }
 
         let position = Game._getCellPosition(cell);
 
         let cellValue = this._cells[position[0]][position[1]];
-        cell.textContent = cellValue;
+        
 
         if (cellValue === this._cellTypes.bomb) {
             cell.classList.add('mistake');
+            cell.classList.add('bomb');
             this._gameOver();
             return;
         }
 
+        cell.textContent = cellValue;
         cell.classList.add('open');
         if (cellValue === this._cellTypes.empty) {
             this._openOuterCells(position);
@@ -149,53 +170,31 @@ class Game extends BaseComponent {
     _calcOuterBombs(pos) {
         let num = 0;
 
-        let row = pos[0] - 1;
-        if (this._cells[row]) {
-            let cellLeftTop = this._cells[row][pos[1] - 1];
-            if (cellLeftTop && cellLeftTop === this._cellTypes.bomb) {
-                num++;
-            }
+        num += this._calcBombsInOuterCells(pos[0] - 1, pos[1]);
 
-            let cellTop = this._cells[row][pos[1]];
-            if (cellTop && cellTop === this._cellTypes.bomb) {
-                num++;
-            }
+        num += this._calcBombsInOuterCells(pos[0], pos[1]);
 
-            let cellTopRight = this._cells[row][pos[1] + 1];
-            if (cellTopRight && cellTopRight === this._cellTypes.bomb) {
-                num++;
-            }
-        }
+        num += this._calcBombsInOuterCells(pos[0] + 1, pos[1]);
 
-        let cellLeft = this._cells[pos[0]][pos[1] - 1];
-        if (cellLeft && cellLeft === this._cellTypes.bomb) {
-            num++;
-        }
+        return num;
+    }
 
-        let cellRight = this._cells[pos[0]][pos[1] + 1];
-        if (cellRight && cellRight === this._cellTypes.bomb) {
-            num++;
-        }
+    _calcBombsInOuterCells(rowIndex, cellIndex) {
+        let num = 0;
 
-        row = pos[0] + 1;
-        if (this._cells[row]) {
-            let cellBottomLeft = this._cells[pos[0] + 1][pos[1] - 1];
-            if (cellBottomLeft && cellBottomLeft === this._cellTypes.bomb) {
-                num++;
-            }
+        if (this._cells[rowIndex]) {
+            num += +this._bombInCell(rowIndex, cellIndex - 1);
 
-            let cellBottom = this._cells[pos[0] + 1][pos[1]];
-            if (cellBottom && cellBottom === this._cellTypes.bomb) {
-                num++;
-            }
+            num += +this._bombInCell(rowIndex, cellIndex);
 
-            let cellBottomRight = this._cells[pos[0] + 1][pos[1] + 1];
-            if (cellBottomRight && cellBottomRight === this._cellTypes.bomb) {
-                num++;
-            }
+            num += +this._bombInCell(rowIndex, cellIndex + 1);
         }
 
         return num;
+    }
+
+    _bombInCell(rowIndex, cellIndex) {
+        return this._cells[rowIndex][cellIndex] === this._cellTypes.bomb;
     }
 
     /**
