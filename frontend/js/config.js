@@ -8,6 +8,8 @@ class Config extends BaseComponent {
         super(options.element);
 
         this.render();
+
+        this.on('change', this._onChange.bind(this), '[data-element="game-type-select"]');
     }
 
     render() {
@@ -24,6 +26,10 @@ class Config extends BaseComponent {
 
     getValue() {
         return this._select.value;
+    }
+
+    _onChange(e, select) {
+        this.trigger('difficultyChanged', select.value);
     }
 }
 

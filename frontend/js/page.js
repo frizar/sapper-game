@@ -45,7 +45,8 @@ class Page {
 
         this._game.on('gameStarted', this._onGameStart.bind(this));
         this._game.on('gameOver', this._onGameOver.bind(this));
-        this._newGame.on('newGame', this._onNewGame.bind(this));
+        this._newGame.on('newGame', this._restartGame.bind(this));
+        this._config.on('difficultyChanged', this._onDifficultyChanged.bind(this));
     }
 
     _onGameStart(e) {
@@ -72,14 +73,18 @@ class Page {
         }
     }
 
-    _onNewGame(e) {
+    _restartGame() {
         this._alert.hide();
         this._timer.clean();
 
-        let difficulty = this._config.getValue();
+        this._game.restartGame();
+    }
+
+    _onDifficultyChanged(e) {
+        let difficulty = e.detail;
         this._game.changeDifficulty(difficulty);
 
-        this._game.restartGame();
+        this._restartGame();
     }
 }
 
