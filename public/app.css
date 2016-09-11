@@ -14,32 +14,34 @@
     outline: 1px solid blue;
 }
 
-[data-component="timer"] {
-    border: 1px solid #a4abf6;
-    border-radius: 4px;
-    margin: 10px auto;
-    padding: 3px;
+[data-element="sapper__header"] {
+    margin-top: 0;
 }
 
-[data-component="best-result"] {
-    border: 1px solid #a4abf6;
-    border-radius: 4px;
-    margin: 10px auto;
-    padding: 3px;
+[data-component="timer"] .panel-heading,
+[data-component="timer"] .panel-body
+{
+    padding: 1px 3px 3px;
+}
+
+[data-component="best-result"] .panel {
+    margin: 0 auto 20px;
+}
+
+[data-component="best-result"] .panel-heading,
+[data-component="best-result"] .panel-body
+{
+    padding: 1px 3px 3px;
 }
 
 [data-component="game"] {
     border: 10px solid #a4abf6;
     border-radius: 4px;
-    margin: 0 auto 10px;
+    margin: 0 auto 20px;
 }
 
 [data-component="alert"] {
-    margin: 0 auto 10px;
-}
-
-[data-component="new-game"] {
-    margin: 0 auto 10px;
+    margin: 0 auto;
 }
 
 [data-component="game"] .game-field__cell {
