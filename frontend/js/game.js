@@ -98,7 +98,7 @@ class Game extends BaseComponent {
         // открываем первую кликнутую ячейку
         this._openCell(cell);
 
-        this.on('click', this._onClick.bind(this), '.game-field__cell');
+        this.on('mouseup', this._onClick.bind(this), '.game-field__cell');
         // сообщаем странице, что игра началась
         this.trigger('gameStarted');
     }

@@ -10,6 +10,7 @@ Install the dependencies and devDependencies and start the server.
 ```sh
 $ cd sapper-game
 $ npm install -d
+$ webpack
 $ node server/server
 ```
 
