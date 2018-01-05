@@ -3,14 +3,14 @@ Sapper game on pure JavaScript (ES6)
 
 ### Installation
 
-App requires [Node.js](https://nodejs.org/) v6+ to run.
+App requires [Node.js](https://nodejs.org/) v6+ and Webpack 1 (global) to run.
 
 Install the dependencies and devDependencies and start the server.
 
 ```sh
+$ git clone https://github.com/frizar/sapper-game
 $ cd sapper-game
-$ npm install -d
-$ npm install webpack -g
+$ npm install
 $ webpack
 $ node server/server
 ```
