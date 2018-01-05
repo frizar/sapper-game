@@ -10,7 +10,8 @@ Install the dependencies and devDependencies and start the server.
 ```sh
 $ git clone https://github.com/frizar/sapper-game
 $ cd sapper-game
-$ npm install
+$ npm i
+$ npm i webpack -g
 $ webpack
 $ node server/server
 ```
