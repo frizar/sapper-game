@@ -9,7 +9,7 @@ module.exports = {
         filename: "bundle.js"
     },
 
-    watch: true,
+    watch: false,
     devtool: 'source-map',
 
     module: {
